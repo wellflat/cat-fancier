@@ -1,4 +1,4 @@
-cat-recognition
+Cat Recognition Engine
 ===============
 
-cat recognition engine
+

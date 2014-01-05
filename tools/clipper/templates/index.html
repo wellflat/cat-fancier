@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Script-Type" content="text/javascript">
+    <meta http-equiv="Content-Style-Type" content="text/css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" media="screen" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+    <link rel="stylesheet" media="screen" href="{{ url_for('static', filename='Jcrop/css/jquery.Jcrop.css')}}">
+    <title>Target Clipper for cascade training</title>
+  </head>
+  <body>
+    <article>
+      <header>
+        <nav class="navbar navbar-default navbar-static-top" role="navigation">
+          <div class="navbar-header">
+            <a class="navbar-brand" href="/clipper">Target Clipper</a>
+          </div>
+        </nav>
+      </header>
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <span id="message">crop target</span>
+        </div>
+        <div class="panel-body text-center">
+          <a href="#" id="previous"><span class="glyphicon glyphicon-chevron-left" style="font-size:10em;"></span></a>
+          <canvas id="main-canvas"></canvas>
+          <a href="#" id="next"><span class="glyphicon glyphicon-chevron-right" style="font-size:10em;"></span></a>
+          <div class="panel-footer">
+            <div class="btn-group btn-group-lg">
+              <button class="btn btn-default" id="clear">clear</button>
+              <button class="btn btn-default" id="skip">skip</button>
+            </div>
+            <div class="progress progress-striped" style="margin-top:10px;">
+              <div class="progress-bar progress-bar-success" role="progresbar" aria-valuemin="0" aria-valuemax="100">
+              </div>
+              <span id="pos" class="badge badge-info"></span>
+            </div>
+            <div>
+              <button class="btn btn-default" id="regist">regist images to database</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </article>
+    <script>
+      var imgSrc = '{{ imgsrc }}';
+      var imgTotal = '{{ imgtotal }}';
+      var pos = '{{ pos }}';
+      var remain= '{{ remain }}';
+      var progress = '{{ progress }}';
+    </script>
+    <script src="{{ url_for('static', filename='js/jquery-2.0.3.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='Jcrop/js/jquery.Jcrop.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/controller.js') }}"></script>
+  </body>
+</html>
