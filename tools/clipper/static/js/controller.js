@@ -1,59 +1,96 @@
 $(function() {
-  console.log(imgSrc,imgTotal,pos,remain,progress);
-  var ctx = $('#main-canvas')[0].getContext('2d');
-  var posText = $('#pos');
-  var msgText = $('#message');
-  posText.text(parseInt(remain));
-  var img = new Image();
-  img.onload = function() {
+  console.log('index.html',imgSrc,imgTotal,pos,remain,progress,message);
+
+  var ctx = $('#main-canvas')[0].getContext('2d'),
+      canvas = ctx.canvas,
+      img = new Image(),
+      coords = null,
+      curcoords = null,
+      badgeInfo = $('#badge'),
+      msgInfo = $('#message');
+
+  $('.progress-bar').css({'width':progress + '%'});
+  msgInfo.text(message);
+
+  img.addEventListener('load', function() {
     ctx.canvas.width = img.width;
     ctx.canvas.height = img.height;
     ctx.drawImage(img, 0, 0);
-  };
-  if(imgSrc !== 'None') {
+
+    $('#main-canvas').Jcrop({
+      onSelect: function(c) {
+        curcoords = c;
+      },
+      onRelease: function() {
+        coords = curcoords;
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = '#ff0000';
+        ctx.strokeRect(curcoords.x, curcoords.y, curcoords.w, curcoords.h);
+      }
+    });
+  }, false);
+
+  if(parseInt(progress) !== 100) {
     img.src = imgSrc;
   } else {
     drawCompleteImage();
+    $('#next').toggle();
+    $('#prev').toggle();
+    msgInfo.text('complete!');
   }
-  $('.progress-bar').css({'width':progress + '%'});
 
   $('#next').on('click', function(e) {
-    $.getJSON('/clipper/next', function(data) {
+    console.log('coords',coords);
+    coords = JSON.stringify(coords);
+    $.getJSON('/clipper/next', {'coords':coords}, function(data) {
       if(parseInt(data.progress) !== 100) {
         img.src = data.imgsrc;
-        msgText.text('remain: ' + data.remain);
+        msgInfo.text('remain: ' + data.remain);
       } else {
-        msgText.text('complete !');
+        msgInfo.text('complete !');
         drawCompleteImage();
       }
       console.log('next',data);
-      posText.text(data.remain);
+      badgeInfo.text(data.remain);
       $('.progress-bar').css({'width':data.progress + '%'});
+      coords = null;
     });
   });
 
-  $('#previous').on('click', function(e) {
-    $.getJSON('/clipper/previous', function(data) {
+  $('#prev').on('click', function(e) {
+    coords = JSON.stringify(coords);
+    $.getJSON('/clipper/prev', {'coords':coords}, function(data) {
       if(parseInt(data.progress) !== 100) {
         img.src = data.imgsrc;
-        msgText.text('remain: ' + data.remain);
+        msgInfo.text('remain: ' + data.remain);
       }
       if(parseInt(data.progress) === 90) {
         ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
         ctx.drawImage(img, 0, 0);
       }
       console.log('prev',data);
-      posText.text(data.remain);
+      badgeInfo.text(data.remain);
       $('.progress-bar').css({'width':data.progress + '%'});
+      coords = null;
+    });
+  });
+
+  $('#reset-progress').on('click', function(e) {
+    $.post('/clipper/progress', {'pos':0}, function(data) {
+      if(parseInt(data.status) === 200) {
+        msgInfo.text('successfully, reset position to zero.');
+      }
+    });
+  });
+
+  $('#create-list').on('click', function(e) {
+    $.post('/clipper/list', function(data) {
+      msgInfo('successfully, create sample list');
     });
   });
 
   function drawCompleteImage() {
-    // ctx.canvas.width = 450;
-    // ctx.canvas.height = 300;
-    ctx.rect(0, 0, ctx.canvas.width, ctx.canvas.height);
-    ctx.stroke();
-    ctx.font = '30px Consolas, sans-serif';
+    ctx.font = '40px Consolas, sans-serif';
     ctx.fillStyle = '#0099ff';
     ctx.textAlign = 'center';
     ctx.fillText('complete !', ctx.canvas.width/2, ctx.canvas.height/2);

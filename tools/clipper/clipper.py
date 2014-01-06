@@ -6,14 +6,12 @@ import json
 import os
 import re
 import sqlite3
+from pprint import pprint
 
 app = Flask(__name__)
 app.config.update(
     DATABASE = 'samples.db',
-    POSITIVESAMPLES = 'positive.dat',
-    NEGATIVESAMPLES = 'negative.dat',
-    DEBUG = True,
-    SECRET_KEY = 'chocolat',
+    DEBUG = True
 )
 
 db = None
@@ -32,10 +30,10 @@ def querydb(query, args=(), one=False):
     cur.close()
     return (rv[0] if rv else None) if one else rv
 
-def getsamples():
+def getsamples(update=False):
     global samples
-    if samples is None:
-        sql = 'SELECT id, filepath FROM samples WHERE status=100'
+    if update or samples is None:
+        sql = 'SELECT id, filepath FROM samples'
         samples = querydb(sql)
     return samples
 
@@ -50,17 +48,11 @@ def updatepos(pos):
     db.execute(sql, (pos,))
     db.commit()
 
-def updatecoords(coords):
-    sql = 'UPDATE samples SET x=?, y=?, width=?, height=? WHERE id=?'
+def updatecoords(coords, pos):
+    sql = 'UPDATE samples SET x=?, y=?, width=?, height=?, status=? WHERE id=?'
     db = getdb()
-    db.execute(sql, (coords['x'], coords['y'], coords['width'], coords['height']))
+    db.execute(sql, (coords['x'], coords['y'], coords['w'], coords['h'], 200, pos))
     db.commit()
-
-@app.before_request
-def before():
-    pass
-    # g.positivefile = open(app.config['POSITIVESAMPLES'], 'a')
-    # g.negativefile = open(app.config['NEGATIVESAMPLES'], 'a')
 
 @app.route('/clipper')
 def index():
@@ -68,50 +60,70 @@ def index():
     samples = getsamples()
     imgtotal = len(samples)
     pos = getpos()
-    if not imgtotal:
-        message = 'error, image file not found'
-    #counter = ''.join([str(pos+1).zfill(len(str(imgtotal))), ' of ', str(imgtotal)])
+    if imgtotal == 0:
+        message = 'complete !'
+        return render_template('index.html', progress=100, message=message)
+        
     try:
         imgsrc = samples[pos]['filepath']
     except IndexError as e:
         imgsrc = None
+        
     remain = imgtotal - pos
     progress = 1.0*pos/imgtotal*100
-    app.logger.debug(pos/imgtotal)
     return render_template('index.html', message=message, imgsrc=imgsrc, imgtotal=imgtotal, pos=pos, remain=remain, progress=progress)
     
 @app.route('/clipper/next')
 def next():
+    coords = json.loads(request.args.get('coords'))
     isskip = request.args.get('skip')
     samples = getsamples()
     pos = getpos()
     imgtotal = len(samples)
+    app.logger.debug(coords)
+    if coords is not None:
+        updatecoords(coords, pos + 1)
+        
     if pos < imgtotal:
         pos += 1
         updatepos(pos)
+        
     try:
         imgsrc = samples[pos]['filepath']
     except IndexError as e:
         imgsrc = None
+        
     remain = imgtotal - pos
     progress = 1.0*pos/imgtotal*100
     return jsonify(imgsrc=imgsrc, pos=pos, remain=remain, progress=progress)
 
-@app.route('/clipper/previous')
-def previous():
+@app.route('/clipper/prev')
+def prev():
+    coords = json.loads(request.args.get('coords'))
     samples = getsamples()
     pos = getpos()
     imgtotal = len(samples)
     if pos > 0:
         pos -= 1
         updatepos(pos)
+        
     try:
         imgsrc = samples[pos]['filepath']
     except IndexError as e:
         imgsrc = None
+        
     remain = imgtotal - pos
     progress = 1.0*pos/imgtotal*100
     return jsonify(imgsrc=imgsrc, pos=pos, remain=remain, progress=progress)
+
+@app.route('/clipper/progress', methods=['POST'])
+def updateprogress():
+    pos = json.loads(request.form['pos'])
+    app.logger.debug(pos)
+    if pos is not None:
+        updatepos(pos)
+        
+    return jsonify(status=200, message='ok')
 
 ## main
 if __name__ == '__main__':
