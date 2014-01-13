@@ -1,9 +1,16 @@
 .jcrop-holder {
     display: inline-block;
 }
-.glyphicon {
-    font-size:15em;
+.glyphicon-chevron-left, .glyphicon-chevron-right {
+    font-size: 15em;
+}
+#message {
+    font-size: 2em;
+}
+.glyphicon-ok-circle {
+    font-size: 2.5em;
+    color: #aaa;
 }
 .progress {
-    margin-top:1em;
+    margin-top: 1em;
 }

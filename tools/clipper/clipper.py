@@ -48,6 +48,11 @@ def updatepos(pos):
     db.execute(sql, (pos,))
     db.commit()
 
+def getstatus(pos):
+    sql = 'SELECT status FROM samples WHERE id=?'
+    row = querydb(sql, (pos + 1,), one=True)
+    return (row['status'] if row else None)
+
 def updatecoords(coords, pos):
     sql = 'UPDATE samples SET x=?, y=?, width=?, height=?, status=? WHERE id=?'
     db = getdb()
@@ -60,7 +65,7 @@ def index():
     samples = getsamples()
     imgtotal = len(samples)
     pos = getpos()
-    if imgtotal == 0:
+    if pos == imgtotal:
         message = 'complete !'
         return render_template('index.html', progress=100, message=message)
         
@@ -68,10 +73,11 @@ def index():
         imgsrc = samples[pos]['filepath']
     except IndexError as e:
         imgsrc = None
-        
+
+    status = getstatus(pos)
     remain = imgtotal - pos
     progress = 1.0*pos/imgtotal*100
-    return render_template('index.html', message=message, imgsrc=imgsrc, imgtotal=imgtotal, pos=pos, remain=remain, progress=progress)
+    return render_template('index.html', imgsrc=imgsrc, imgtotal=imgtotal, pos=pos, status=status, remain=remain, progress=progress, message=message)
     
 @app.route('/clipper/next')
 def next():
@@ -81,6 +87,8 @@ def next():
     pos = getpos()
     imgtotal = len(samples)
     app.logger.debug(coords)
+
+    app.logger.debug(type(coords))
     if coords is not None:
         updatecoords(coords, pos + 1)
         
@@ -92,10 +100,11 @@ def next():
         imgsrc = samples[pos]['filepath']
     except IndexError as e:
         imgsrc = None
-        
+
+    status = getstatus(pos)    
     remain = imgtotal - pos
     progress = 1.0*pos/imgtotal*100
-    return jsonify(imgsrc=imgsrc, pos=pos, remain=remain, progress=progress)
+    return jsonify(imgsrc=imgsrc, pos=pos, status=status, remain=remain, progress=progress)
 
 @app.route('/clipper/prev')
 def prev():
@@ -111,10 +120,11 @@ def prev():
         imgsrc = samples[pos]['filepath']
     except IndexError as e:
         imgsrc = None
-        
+
+    status = getstatus(pos)
     remain = imgtotal - pos
     progress = 1.0*pos/imgtotal*100
-    return jsonify(imgsrc=imgsrc, pos=pos, remain=remain, progress=progress)
+    return jsonify(imgsrc=imgsrc, pos=pos, status=status, remain=remain, progress=progress)
 
 @app.route('/clipper/progress', methods=['POST'])
 def updateprogress():
@@ -123,6 +133,11 @@ def updateprogress():
     if pos is not None:
         updatepos(pos)
         
+    return jsonify(status=200, message='ok')
+
+@app.route('/clipper/sync', methods=['POST'])
+def syncdatabase():
+    getsamples(update=True)
     return jsonify(status=200, message='ok')
 
 ## main

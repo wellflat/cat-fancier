@@ -1,16 +1,19 @@
 $(function() {
-  console.log('index.html',imgSrc,imgTotal,pos,remain,progress,message);
+  console.log('index.html',imgSrc,imgTotal,pos,status,remain,progress,message);
 
   var ctx = $('#main-canvas')[0].getContext('2d'),
       canvas = ctx.canvas,
       img = new Image(),
       coords = null,
       curcoords = null,
+      statusInfo = $('#status'),
       badgeInfo = $('#badge'),
-      msgInfo = $('#message');
+      msgInfo = $('#message'),
+      progressBar = $('.progress-bar');
 
-  $('.progress-bar').css({'width':progress + '%'});
-  msgInfo.text(message);
+  progressBar.css({'width':progress + '%'});
+  //msgInfo.text(message);
+  showIcon(status);
 
   img.addEventListener('load', function() {
     ctx.canvas.width = img.width;
@@ -45,14 +48,15 @@ $(function() {
     $.getJSON('/clipper/next', {'coords':coords}, function(data) {
       if(parseInt(data.progress) !== 100) {
         img.src = data.imgsrc;
-        msgInfo.text('remain: ' + data.remain);
       } else {
         msgInfo.text('complete !');
+        statusInfo.css({'display':'none'});
         drawCompleteImage();
       }
       console.log('next',data);
       badgeInfo.text(data.remain);
-      $('.progress-bar').css({'width':data.progress + '%'});
+      showIcon(data.status);
+      progressBar.css({'width':data.progress + '%'});
       coords = null;
     });
   });
@@ -62,7 +66,6 @@ $(function() {
     $.getJSON('/clipper/prev', {'coords':coords}, function(data) {
       if(parseInt(data.progress) !== 100) {
         img.src = data.imgsrc;
-        msgInfo.text('remain: ' + data.remain);
       }
       if(parseInt(data.progress) === 90) {
         ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
@@ -70,24 +73,40 @@ $(function() {
       }
       console.log('prev',data);
       badgeInfo.text(data.remain);
-      $('.progress-bar').css({'width':data.progress + '%'});
+      showIcon(data.status);
+      progressBar.css({'width':data.progress + '%'});
       coords = null;
     });
+  });
+
+  $('#clear').on('click', function(e) {
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    ctx.drawImage(img, 0, 0);
+    coords = null;
   });
 
   $('#reset-progress').on('click', function(e) {
     $.post('/clipper/progress', {'pos':0}, function(data) {
       if(parseInt(data.status) === 200) {
         msgInfo.text('successfully, reset position to zero.');
+        progressBar.css({'width':'0%'});
       }
     });
   });
 
-  $('#create-list').on('click', function(e) {
-    $.post('/clipper/list', function(data) {
-      msgInfo('successfully, create sample list');
+  $('#sync-database').on('click', function(e) {
+    $.post('/clipper/sync', function(data) {
+      msgInfo.text('successfully, sync data');
     });
   });
+
+  function showIcon(status) {
+    if(parseInt(status) == 200) {
+      statusInfo.css({'color':'#00cc66'});
+    } else {
+      statusInfo.css({'color':'#aaa'});
+    }
+  }
 
   function drawCompleteImage() {
     ctx.font = '40px Consolas, sans-serif';

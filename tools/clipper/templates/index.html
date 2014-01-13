@@ -21,7 +21,8 @@
       </header>
       <div class="panel panel-default">
         <div class="panel-heading">
-          <span id="message">crop target</span>
+          <span id="message"></span>
+          <span id="status" class="glyphicon glyphicon-ok-circle"></span>
         </div>
         <div class="panel-body text-center">
           <a href="#" id="prev"><span class="glyphicon glyphicon-chevron-left"></span></a>
@@ -30,7 +31,7 @@
           <div class="panel-footer">
             <div class="btn-group btn-group-lg">
               <button id="clear" class="btn btn-default">clear</button>
-              <button id="skip" class="btn btn-default">skip</button>
+              <!-- <button id="skip" class="btn btn-default">skip</button> -->
             </div>
             <div class="progress progress-striped">
               <div class="progress-bar progress-bar-success" role="progresbar" aria-valuemin="0" aria-valuemax="100">
@@ -38,7 +39,7 @@
               <span id="badge" class="badge badge-info"></span>
             </div>
             <div>
-              <button id="create-list" class="btn btn-default">create sample list</button>
+              <button id="sync-database" class="btn btn-default">sync database</button>
               <button id="reset-progress" class="btn btn-default">reset progress</button>
             </div>
           </div>
@@ -49,6 +50,7 @@
       var imgSrc = '{{ imgsrc }}';
       var imgTotal = '{{ imgtotal }}';
       var pos = '{{ pos }}';
+      var status = '{{ status }}';
       var remain= '{{ remain }}';
       var progress = '{{ progress }}';
       var message = '{{ message }}';

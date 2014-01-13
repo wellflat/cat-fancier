@@ -20,9 +20,14 @@ if __name__ == '__main__':
         except sqlite3.IntegrityError as e:
             pass
     db.commit()
-    sql = 'INSERT INTO progress(pos, total) VALUES(0, ?)'
-    db.execute(sql, (len(images),))
-    db.commit()
+    try:
+        sql = 'INSERT INTO progress(pos, total) VALUES(0, ?)'
+        db.execute(sql, (len(images),))
+        db.commit()
+    except sqlite3.IntegrityError as e:
+        sql = 'UPDATE progress SET total=?'
+        db.execute(sql, (len(images),))
+        db.commit()
     db.close()
         
         
