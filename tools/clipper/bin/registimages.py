@@ -1,12 +1,20 @@
 #!/usr/local/bin/python
 # -*- coding: utf-8 -*-
 
-import os
 import re
+import optparse
+import os
 import sqlite3
 
+def createparser():
+    parser = optparse.OptionParser()
+    parser.add_option('-d', '--database', dest='dbname', default='samples.db')
+    return parser
+
 if __name__ == '__main__':
-    dbname = 'samples.db'
+    parser = createparser()
+    (options, args) = parser.parse_args()
+    dbname = options.dbname
     db = sqlite3.connect(dbname)
     pattern = re.compile('.*[.](jpg|jpeg|png|bmp|gif)$')
     imagedir = os.path.join('static', 'images')
@@ -21,13 +29,11 @@ if __name__ == '__main__':
             pass
     db.commit()
     try:
-        sql = 'INSERT INTO progress(pos, total) VALUES(0, ?)'
-        db.execute(sql, (len(images),))
-        db.commit()
-    except sqlite3.IntegrityError as e:
         sql = 'UPDATE progress SET total=?'
         db.execute(sql, (len(images),))
         db.commit()
+    except sqlite3.IntegrityError as e:
+        print(e)
     db.close()
         
         

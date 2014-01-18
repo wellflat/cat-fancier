@@ -13,6 +13,7 @@ $(function() {
 
   progressBar.css({'width':progress + '%'});
   //msgInfo.text(message);
+  badgeInfo.text(remain);
   showIcon(status);
 
   img.addEventListener('load', function() {

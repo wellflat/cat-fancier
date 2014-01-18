@@ -3,6 +3,7 @@
 
 import urllib2
 import json
+import sys
 from pprint import pprint
 
 class FlickrClient(object):
@@ -11,7 +12,7 @@ class FlickrClient(object):
         self.__apikey = apikey
         self.__apisecret = apisecret
         self.__userid = userid
-        self.__baseurl = 'http://api.flickr.com/services/rest/?method='
+        self.__baseurl = u'http://api.flickr.com/services/rest/?method='
 
     def getuserid(self):
         return self.__userid
@@ -21,9 +22,9 @@ class FlickrClient(object):
         
     userid = property(getuserid, setuserid)
     
-    def getbytag(self, tag, size='m'):
-        url = self.__baseurl + 'flickr.photos.search&api_key=%s&user_id=%s&tags=%s&license=4&extras=url_%s&format=json&nojsoncallback=1' % (self.__apikey, self.__userid, tag, size)
-        response = urllib2.urlopen(url)
+    def getbytag(self, tag, page=1, size='m'):
+        url = self.__baseurl + u'flickr.photos.search&api_key=%s&user_id=%s&tags=%s&license=4&extras=url_%s&page=%s&format=json&nojsoncallback=1' % (self.__apikey, self.__userid, tag, size, page)
+        response = urllib2.urlopen(url.encode('utf-8'))
         parsed = json.loads(response.read())
         return parsed
 
@@ -51,9 +52,16 @@ if __name__ == '__main__':
     apisecret = 'eca90abc0e259384'
     userid = '95962563@N02'
     flickr = FlickrClient(apikey, apisecret, userid)
-    ret = flickr.getbytag('chocolat')
-    #ret = flickr.getbytag('cat')
+    tag = u'石神井公園'
+    #tag = u'cat'
+    dstdir = './static/negative'
+    ret = flickr.getbytag(tag)
+    pagenum = int(ret['photos']['pages'])
+    print(pagenum)
     total = ret['photos']['total']
     print('total photos: %s' % (total,))
-    #flickr.downloadphotos(ret['photos']['photo'], '../static/tmp', verbose=True)
+    for i in xrange(1, pagenum + 1):
+        ret = flickr.getbytag(tag, page=i)
+        flickr.downloadphotos(ret['photos']['photo'], dstdir, verbose=True)
+        
     print('complete.')
