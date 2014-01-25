@@ -52,7 +52,8 @@ if __name__ == '__main__':
     apisecret = 'eca90abc0e259384'
     userid = '95962563@N02'
     flickr = FlickrClient(apikey, apisecret, userid)
-    tag = u'石神井公園'
+    tag = u'park'
+    #tag = u'檜町公園'
     #tag = u'cat'
     dstdir = './static/negative'
     ret = flickr.getbytag(tag)
@@ -60,6 +61,7 @@ if __name__ == '__main__':
     print(pagenum)
     total = ret['photos']['total']
     print('total photos: %s' % (total,))
+    
     for i in xrange(1, pagenum + 1):
         ret = flickr.getbytag(tag, page=i)
         flickr.downloadphotos(ret['photos']['photo'], dstdir, verbose=True)
