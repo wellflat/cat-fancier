@@ -6,7 +6,8 @@ VEC_FILE=positive.vec
 BG_FILE=negative.dat
 NUM_POS=
 NUM_NEG=
-FEATURE_TYPE=LBP
+#FEATURE_TYPE=LBP
+FEATURE_TYPE=HAAR
 
 function create_samples {
     /usr/local/bin/opencv_createsamples -info positive.dat -vec positive.vec -num $1
