@@ -22,8 +22,12 @@ class FlickrClient(object):
         
     userid = property(getuserid, setuserid)
     
-    def getbytag(self, tag, page=1, size='m'):
-        url = self.__baseurl + u'flickr.photos.search&api_key=%s&user_id=%s&tags=%s&license=4&extras=url_%s&page=%s&format=json&nojsoncallback=1' % (self.__apikey, self.__userid, tag, size, page)
+    def getbytag(self, tag, page=1, ismine=True, cconly=True, size='m'):
+        url = self.__baseurl + u'flickr.photos.search&api_key=%s&tags=%s&extras=url_%s&page=%s&format=json&nojsoncallback=1' % (self.__apikey, tag, size, page)
+        if ismine:
+            url += '&user_id=%s' % (self.__userid,)
+        if cconly:
+            url += '&license=4'
         response = urllib2.urlopen(url.encode('utf-8'))
         parsed = json.loads(response.read())
         return parsed
@@ -48,20 +52,28 @@ class FlickrClient(object):
         return urls
             
 if __name__ == '__main__':
-    apikey = 'cf34b6d0fc8d5d2924ba67c7158739a3'
-    apisecret = 'eca90abc0e259384'
-    userid = '95962563@N02'
-    flickr = FlickrClient(apikey, apisecret, userid)
-    tag = u'石神井公園'
-    #tag = u'cat'
-    dstdir = './static/negative'
-    ret = flickr.getbytag(tag)
-    pagenum = int(ret['photos']['pages'])
-    print(pagenum)
-    total = ret['photos']['total']
-    print('total photos: %s' % (total,))
-    for i in xrange(1, pagenum + 1):
-        ret = flickr.getbytag(tag, page=i)
-        flickr.downloadphotos(ret['photos']['photo'], dstdir, verbose=True)
-        
-    print('complete.')
+    try:
+        apikey = 'cf34b6d0fc8d5d2924ba67c7158739a3'
+        apisecret = 'eca90abc0e259384'
+        userid = '95962563@N02'
+        flickr = FlickrClient(apikey, apisecret, userid)
+        tag = u'福井県'
+        #tag = u'石神井公園'
+        #tag = u'cat'
+        print('search by %s' % (tag,))
+        dstdir = './static/negative/images/other'
+        ret = flickr.getbytag(tag, ismine=False, cconly=False)
+        pagenum = int(ret['photos']['pages'])
+        print('total pages: %s' % (pagenum,))
+        total = ret['photos']['total']
+        print('total photos: %s' % (total,))
+        pagenum = 10
+        for i in xrange(1, pagenum + 1):
+            print('page %s' % (i,))
+            ret = flickr.getbytag(tag, page=i, ismine=False, cconly=False)
+            flickr.downloadphotos(ret['photos']['photo'], dstdir, verbose=True)
+            
+        print('complete.')
+    except KeyboardInterrupt as e:
+        print(e)
+        sys.exit(-1)
