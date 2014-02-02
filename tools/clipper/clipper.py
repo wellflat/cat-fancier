@@ -6,6 +6,7 @@ import json
 import os
 import re
 import sqlite3
+import time
 from pprint import pprint
 
 app = Flask(__name__)
@@ -54,9 +55,9 @@ def getstatus(pos):
     return (row['status'] if row else None)
 
 def updatecoords(coords, pos):
-    sql = 'UPDATE samples SET x=?, y=?, width=?, height=?, status=? WHERE id=?'
+    sql = 'UPDATE samples SET x=?, y=?, width=?, height=?, status=?, updated_date=? WHERE id=?'
     db = getdb()
-    db.execute(sql, (coords['x'], coords['y'], coords['w'], coords['h'], 200, pos))
+    db.execute(sql, (coords['x'], coords['y'], coords['w'], coords['h'], 200, time.strftime('%Y-%m-%d %H:%M:%S'), pos))
     db.commit()
 
 @app.route('/clipper')

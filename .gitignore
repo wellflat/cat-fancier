@@ -25,3 +25,4 @@ pkg
 ## PROJECT::SPECIFIC
 *.db
 *.dat
+*.vec

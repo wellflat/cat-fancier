@@ -17,7 +17,8 @@ if __name__ == '__main__':
     dbname = options.dbname
     db = sqlite3.connect(dbname)
     pattern = re.compile('.*[.](jpg|jpeg|png|bmp|gif)$')
-    imagedir = os.path.join('static', 'images')
+    #imagedir = 'static/images'
+    imagedir = 'static/oxford/images'
     images = [image for image in os.listdir(imagedir) if re.match(pattern, image)]
     sql = 'INSERT INTO samples(filepath, status) VALUES(?, ?)'
     for i, image in enumerate(images):
