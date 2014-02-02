@@ -74,8 +74,8 @@ if __name__ == '__main__':
         positivefile.write(annotationdata)
     positivefile.close()
     
-    negativefilelist = createnegativefilelist(db)
-    negativefilelist += appendnegativefilelist('static/negative', 'images')
+    #negativefilelist = createnegativefilelist(db)
+    negativefilelist = appendnegativefilelist('static/negative', 'images')
     if negativefilelist:
         negativefile.write(negativefilelist)
     negativefile.close()
