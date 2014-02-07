@@ -75,7 +75,8 @@ if __name__ == '__main__':
     positivefile.close()
     
     #negativefilelist = createnegativefilelist(db)
-    negativefilelist = appendnegativefilelist('static/negative', 'images')
+    negativefilelist = appendnegativefilelist('static/negative/images', 'other')
+
     if negativefilelist:
         negativefile.write(negativefilelist)
     negativefile.close()

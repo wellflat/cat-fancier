@@ -57,9 +57,11 @@ if __name__ == '__main__':
         apisecret = 'eca90abc0e259384'
         userid = '95962563@N02'
         flickr = FlickrClient(apikey, apisecret, userid)
-        tag = u'福井県'
-        #tag = u'石神井公園'
-        #tag = u'cat'
+        if len(sys.argv) == 2:
+            fsencoding = sys.getfilesystemencoding() or sys.getdefaultencoding()
+            tag = sys.argv[1].decode(fsencoding)
+        else:
+            tag = u'cat'
         print('search by %s' % (tag,))
         dstdir = './static/negative/images/other'
         ret = flickr.getbytag(tag, ismine=False, cconly=False)
@@ -67,13 +69,14 @@ if __name__ == '__main__':
         print('total pages: %s' % (pagenum,))
         total = ret['photos']['total']
         print('total photos: %s' % (total,))
-        pagenum = 10
-        for i in xrange(1, pagenum + 1):
+        firstpage = 11
+        pagenum = firstpage + 10
+        for i in xrange(firstpage, pagenum + 1):
             print('page %s' % (i,))
             ret = flickr.getbytag(tag, page=i, ismine=False, cconly=False)
             flickr.downloadphotos(ret['photos']['photo'], dstdir, verbose=True)
             
         print('complete.')
     except KeyboardInterrupt as e:
-        print(e)
+        print('Keyborad Interrupt')
         sys.exit(-1)

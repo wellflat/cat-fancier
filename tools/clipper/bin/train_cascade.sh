@@ -1,7 +1,7 @@
 #!/bin/sh
 
 CMD=/usr/local/bin/opencv_traincascade
-DST_DIR=train/
+DST_DIR=train/haar
 VEC_FILE=positive.vec
 BG_FILE=negative.dat
 NUM_POS=
