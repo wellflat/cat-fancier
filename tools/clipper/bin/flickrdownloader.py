@@ -63,17 +63,17 @@ if __name__ == '__main__':
         else:
             tag = u'cat'
         print('search by %s' % (tag,))
-        dstdir = './static/negative/images/other'
-        ret = flickr.getbytag(tag, ismine=False, cconly=False)
+        dstdir = './static/images/tmp'
+        print('save to: %s' % (dstdir,))
+        ret = flickr.getbytag(tag, ismine=True, cconly=True)
         pagenum = int(ret['photos']['pages'])
         print('total pages: %s' % (pagenum,))
         total = ret['photos']['total']
         print('total photos: %s' % (total,))
-        firstpage = 11
-        pagenum = firstpage + 10
+        firstpage = 1
         for i in xrange(firstpage, pagenum + 1):
             print('page %s' % (i,))
-            ret = flickr.getbytag(tag, page=i, ismine=False, cconly=False)
+            ret = flickr.getbytag(tag, page=i, ismine=True, cconly=True)
             flickr.downloadphotos(ret['photos']['photo'], dstdir, verbose=True)
             
         print('complete.')

@@ -17,8 +17,8 @@ if __name__ == '__main__':
     dbname = options.dbname
     db = sqlite3.connect(dbname)
     pattern = re.compile('.*[.](jpg|jpeg|png|bmp|gif)$')
-    #imagedir = 'static/images'
-    imagedir = 'static/oxford/images'
+    imagedir = 'static/images'
+    #imagedir = 'static/oxford/images'
     images = [image for image in os.listdir(imagedir) if re.match(pattern, image)]
     sql = 'INSERT INTO samples(filepath, status) VALUES(?, ?)'
     for i, image in enumerate(images):
@@ -30,8 +30,8 @@ if __name__ == '__main__':
             pass
     db.commit()
     try:
-        sql = 'UPDATE progress SET total=?'
-        db.execute(sql, (len(images),))
+        sql = 'UPDATE progress SET total=(SELECT COUNT(id) FROM samples))'
+        db.execute(sql)
         db.commit()
     except sqlite3.IntegrityError as e:
         print(e)
