@@ -89,7 +89,6 @@ def next():
     imgtotal = len(samples)
     app.logger.debug(coords)
 
-    app.logger.debug(type(coords))
     if coords is not None:
         updatecoords(coords, pos + 1)
         
