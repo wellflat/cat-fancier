@@ -30,10 +30,11 @@ if __name__ == '__main__':
             pass
     db.commit()
     try:
-        sql = 'UPDATE progress SET total=(SELECT COUNT(id) FROM samples))'
+        sql = 'UPDATE progress SET total=(SELECT COUNT(id) FROM samples)'
         db.execute(sql)
         db.commit()
     except sqlite3.IntegrityError as e:
+        db.rollback()
         print(e)
     db.close()
         
