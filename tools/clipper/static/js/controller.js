@@ -36,6 +36,7 @@ $(function() {
 
   if(parseInt(progress) !== 100) {
     jcropAPI.setImage(imgSrc);
+    msgInfo.text(imgSrc);
   } else {
     //drawCompleteImage();
     $('#next').toggle();
