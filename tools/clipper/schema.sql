@@ -18,3 +18,5 @@ CREATE TABLE progress (
     total INTEGER NOT NULL
 );
 CREATE INDEX IF NOT EXISTS pos_idx ON progress(pos);
+
+INSERT INTO progress(pos, total) VALUES(0, 0);

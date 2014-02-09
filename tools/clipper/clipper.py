@@ -11,7 +11,8 @@ from pprint import pprint
 
 app = Flask(__name__)
 app.config.update(
-    DATABASE = 'samples.db',
+    #DATABASE = 'samples.db',
+    DATABASE = 'catcafe.db',
     DEBUG = True
 )
 

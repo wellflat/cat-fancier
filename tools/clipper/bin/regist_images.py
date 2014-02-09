@@ -8,7 +8,7 @@ import sqlite3
 
 def createparser():
     parser = optparse.OptionParser()
-    parser.add_option('-d', '--database', dest='dbname', default='samples.db')
+    parser.add_option('-d', '--database', dest='dbname')
     return parser
 
 if __name__ == '__main__':
