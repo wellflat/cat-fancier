@@ -16,13 +16,13 @@ int main(int argc, char** argv) {
     exit(-1);
   }
   vector<cv::Rect> objects;
-  cascade.detectMultiScale(src_img, objects);
+  cascade.detectMultiScale(src_img, objects, 1.1, 3, 0, cv::Size(12, 40));
   vector<cv::Rect>::const_iterator iter = objects.begin();
   cout << "count: " << objects.size() << endl;
   while(iter!=objects.end()) {
     cv::rectangle(src_img,
                   cv::Rect(iter->x, iter->y, iter->width, iter->height),
-                  cv::Scalar(0, 255, 0));
+                  cv::Scalar(0, 0, 255), 4);
     ++iter;
   }
   cv::imwrite("box/detect.jpg", src_img);
