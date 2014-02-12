@@ -90,7 +90,7 @@ def createannotationfile():
 if __name__ == '__main__':
     dbname = 'samples.db'
     #createannotationfile()
-    insertannotation(dbname)
-    #removedogimages()
+    #insertannotation(dbname)
+    removedogimages()
     #removedogxmls()
     
