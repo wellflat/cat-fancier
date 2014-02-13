@@ -14,15 +14,19 @@ def createparser():
                       default='positive.dat')
     return parser
 
-def createsamples(positivefile, num=1500):
+def countline(filename):
+    return len(open(filename).readlines())
+
+def createsamples(positivefile):
     os.environ['PATH'] = '/bin:/usr/bin:/usr/local/bin'
     cwd = './'
     vecdir = cwd + 'vec/'
     if not os.path.isdir(vecdir):
         os.mkdir(vecdir)
+    linecount = countline(positivefile)
     cmdline = ['opencv_createsamples', '-info', positivefile,
                '-vec', vecdir + positivefile + '.vec',
-               '-num', str(num)]
+               '-num', str(linecount)]
     try:
         p = subprocess.Popen(cmdline, cwd=cwd, shell=False,
                              stdin=subprocess.PIPE,
