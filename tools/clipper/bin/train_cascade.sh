@@ -6,8 +6,9 @@ VEC_FILE=positive.vec
 BG_FILE=negative.dat
 NUM_POS=
 NUM_NEG=
-#FEATURE_TYPE=LBP
-FEATURE_TYPE=HAAR
+FEATURE_TYPE=LBP
+#FEATURE_TYPE=HAAR
+LOG_FILE=train.log
 
 function create_samples {
     /usr/local/bin/opencv_createsamples -info positive.dat -vec positive.vec -num $1
@@ -20,7 +21,7 @@ function train_cascade {
         exit -1
     fi
 #    opencv_traincascade -data train/yahoo/lbp -vec yahoo_88_24.vec -numPos 1800 -bg negative.dat -numNeg 3937 -w 88 -h 24 -featureType LBP > train_logo.log    
-    $CMD -data $DST_DIR -vec $VEC_FILE -bg $BG_FILE -numPos $1 -numNeg $2 -featureType $FEATURE_TYPE
+    $CMD -data $DST_DIR -vec $VEC_FILE -bg $BG_FILE -numPos $1 -numNeg $2 -featureType $FEATURE_TYPE -maxFalseAlarmRate 0.4 > $LOG_FILE
 }
 
 train_cascade $*
