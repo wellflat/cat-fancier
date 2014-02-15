@@ -2,22 +2,26 @@
 # -*- coding: utf-8 -*-
 
 import re
-import optparse
+import argparse
 import os
 import sqlite3
+import sys
 
-def createparser():
-    parser = optparse.OptionParser()
-    parser.add_option('-d', '--database', dest='dbname')
-    return parser
+def parsearguments():
+    parser = argparse.ArgumentParser(description='regist images to sqlite3 database')
+    parser.add_argument('dbname')
+    return parser.parse_args()
 
 if __name__ == '__main__':
-    parser = createparser()
-    (options, args) = parser.parse_args()
-    dbname = options.dbname
-    db = sqlite3.connect(dbname)
+    args = parsearguments()
+    dbname = args.dbname
+    if os.path.exists(dbname):
+        db = sqlite3.connect(dbname)
+    else:
+        print('%s is notfound' % (dbname,))
+        sys.exit(-1)
     pattern = re.compile('.*[.](jpg|jpeg|png|bmp|gif)$')
-    imagedir = 'static/images'
+    imagedir = 'static/images/flickr'
     #imagedir = 'static/oxford/images'
     images = [image for image in os.listdir(imagedir) if re.match(pattern, image)]
     sql = 'INSERT INTO samples(filepath, status) VALUES(?, ?)'
