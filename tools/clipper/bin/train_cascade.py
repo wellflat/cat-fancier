@@ -24,6 +24,7 @@ def createsamples(positivefile):
     if not os.path.isdir(vecdir):
         os.mkdir(vecdir)
     linecount = countline(positivefile)
+    print(linecount)
     cmdline = ['opencv_createsamples', '-info', positivefile,
                '-vec', vecdir + positivefile + '.vec',
                '-num', str(linecount)]

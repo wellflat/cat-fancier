@@ -7,7 +7,7 @@ import cv2 as cv
 def detect(filename, cascadefilename='cascade.xml'):
     srcimg = cv.imread(filename)
     cascade = cv.CascadeClassifier(cascadefilename)
-    objects = cascade.detectMultiScale(srcimg, 1.1, 3)
+    objects = cascade.detectMultiScale(srcimg, 10.1, 3)
     for (x, y, w, h) in objects:
         print(x, y, w, h)
         cv.rectangle(srcimg, (x, y), (x + w, y + h), (0, 0, 255), 4)

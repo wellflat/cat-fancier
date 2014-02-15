@@ -58,7 +58,10 @@ class FlickrClient(object):
         urls = []
         key = 'url_%s' % (size,)
         for p in photolist:
-            urls.append(p[key])
+            try:
+                urls.append(p[key])
+            except KeyError as e:
+                pass
             
         return urls
             
@@ -78,8 +81,7 @@ if __name__ == '__main__':
         print('search by %s' % (tag,))
         print('creative commons only: %s' % (options.cconly,))
         print('my photo only: %s' % (options.mine,))
-        #dstdir = './static/images/tmp'
-        dstdir = './static/negative/images/other'
+        dstdir = './static/images/tmp'
         print('save to: %s' % (dstdir,))
         ret = flickr.getbytag(tag, ismine=options.mine, cconly=options.cconly)
         pagenum = int(ret['photos']['pages'])
