@@ -1,21 +1,21 @@
 #!/usr/local/bin/python
 # -*- coding: utf-8 -*-
 
+import argparse
 import urllib2
 import json
-import optparse
 import sys
 from pprint import pprint
 
-def createparser():
-    parser = optparse.OptionParser()
-    parser.add_option('-d', '--download', action='store_true', dest='download')
-    parser.add_option('-t', '--tag', dest='tag')
-    parser.add_option('-p', '--page', dest='maxpage', type='int', default=10)
-    parser.add_option('-c', '--cconly', action='store_true', dest='cconly', default=False)
-    parser.add_option('-m', '--mine', action='store_true', dest='mine', default=False)
-    parser.add_option('-v', '--verbose', action='store_true', dest='verbose', default=False)
-    return parser
+def parsearguments():
+    parser = argparse.ArgumentParser(description='image downloader from flickr')
+    parser.add_argument('-d', '--download', action='store_true', dest='download')
+    parser.add_argument('-t', '--tag', dest='tag')
+    parser.add_argument('-p', '--page', dest='maxpage', type=int, default=10)
+    parser.add_argument('-c', '--cconly', action='store_true', dest='cconly', default=False)
+    parser.add_argument('-m', '--mine', action='store_true', dest='mine', default=False)
+    parser.add_argument('-v', '--verbose', action='store_true', dest='verbose', default=False)
+    return parser.parse_args()
 
 class FlickrClient(object):
     
@@ -67,34 +67,33 @@ class FlickrClient(object):
             
 if __name__ == '__main__':
     try:
-        parser = createparser()
-        (options, args) = parser.parse_args()
+        args = parsearguments()
         apikey = 'cf34b6d0fc8d5d2924ba67c7158739a3'
         apisecret = 'eca90abc0e259384'
         userid = '95962563@N02'
         flickr = FlickrClient(apikey, apisecret, userid)
-        if options.tag:
+        if args.tag:
             fsencoding = sys.getfilesystemencoding() or sys.getdefaultencoding()
-            tag = options.tag.decode(fsencoding)
+            tag = args.tag.decode(fsencoding)
         else:
             tag = u'cat'
         print('search by %s' % (tag,))
-        print('creative commons only: %s' % (options.cconly,))
-        print('my photo only: %s' % (options.mine,))
+        print('creative commons only: %s' % (args.cconly,))
+        print('my photo only: %s' % (args.mine,))
         dstdir = './static/images/tmp'
         print('save to: %s' % (dstdir,))
-        ret = flickr.getbytag(tag, ismine=options.mine, cconly=options.cconly)
+        ret = flickr.getbytag(tag, ismine=args.mine, cconly=args.cconly)
         pagenum = int(ret['photos']['pages'])
-        if pagenum > options.maxpage:
-            pagenum = options.maxpage
+        if pagenum > args.maxpage:
+            pagenum = args.maxpage
         print('total pages: %s' % (pagenum,))
         total = ret['photos']['total']
         print('total photos: %s' % (total,))
         firstpage = 1
         for i in xrange(firstpage, pagenum + 1):
             print('page %s' % (i,))
-            ret = flickr.getbytag(tag, page=i, ismine=options.mine, cconly=options.cconly)
-            if options.download:
+            ret = flickr.getbytag(tag, page=i, ismine=args.mine, cconly=args.cconly)
+            if args.download:
                 flickr.downloadphotos(ret['photos']['photo'], dstdir, verbose=True)
             
         print('complete.')
