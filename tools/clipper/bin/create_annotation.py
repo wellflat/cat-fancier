@@ -1,20 +1,21 @@
 #!/usr/local/bin/python
 # -*- coding: utf-8 -*-
 
+import argparse
 import re
 import optparse
 import os
 import sqlite3
 from pprint import pprint
 
-def createparser():
-    parser = optparse.OptionParser()
-    parser.add_option('-p', '--positive', dest='positivefilename',
+def parsearguments():
+    parser = argparse.ArgumentParser(description='creates annotation data')
+    parser.add_argument('-p', '--positive', dest='positivefilename',
                       default='positive.dat')
-    parser.add_option('-n', '--negative', dest='negativefilename',
+    parser.add_argument('-n', '--negative', dest='negativefilename',
                       default='negative.dat')
-    parser.add_option('-d', '--database', dest='dbname', default='samples.db')
-    return parser
+    parser.add_argument('-d', '--database', dest='dbname', default='samples.db')
+    return parser.parse_args()
     
 def connectdb(dbname):
     if os.path.exists(dbname):
@@ -62,12 +63,11 @@ def appendnegativefilelist(dirpath, dirname):
     return negativefilelist
 
 if __name__ == '__main__':
-    parser = createparser()
-    (options, args) = parser.parse_args()
-    dbname = options.dbname
+    args = parsearguments()
+    dbname = args.dbname
     db = connectdb(dbname)
-    positivefile = open(options.positivefilename, 'wb')
-    negativefile = open(options.negativefilename, 'wb')
+    positivefile = open(args.positivefilename, 'wb')
+    negativefile = open(args.negativefilename, 'wb')
     annotationdata = createannotations(db)
     
     if annotationdata:
