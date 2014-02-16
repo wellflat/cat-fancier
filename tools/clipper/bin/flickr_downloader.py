@@ -2,20 +2,12 @@
 # -*- coding: utf-8 -*-
 
 import argparse
-import urllib2
+import ConfigParser
 import json
+import urllib2
+import os
 import sys
 from pprint import pprint
-
-def parsearguments():
-    parser = argparse.ArgumentParser(description='image downloader from flickr')
-    parser.add_argument('-d', '--download', action='store_true', dest='download')
-    parser.add_argument('-t', '--tag', dest='tag')
-    parser.add_argument('-p', '--page', dest='maxpage', type=int, default=10)
-    parser.add_argument('-c', '--cconly', action='store_true', dest='cconly', default=False)
-    parser.add_argument('-m', '--mine', action='store_true', dest='mine', default=False)
-    parser.add_argument('-v', '--verbose', action='store_true', dest='verbose', default=False)
-    return parser.parse_args()
 
 class FlickrClient(object):
     
@@ -64,13 +56,26 @@ class FlickrClient(object):
                 pass
             
         return urls
-            
+
+def parsearguments():
+    parser = argparse.ArgumentParser(description='image downloader from flickr')
+    parser.add_argument('-d', '--download', action='store_true', dest='download')
+    parser.add_argument('-t', '--tag', dest='tag')
+    parser.add_argument('-p', '--page', dest='maxpage', type=int, default=10)
+    parser.add_argument('-c', '--cconly', action='store_true', dest='cconly', default=False)
+    parser.add_argument('-m', '--mine', action='store_true', dest='mine', default=False)
+    parser.add_argument('-v', '--verbose', action='store_true', dest='verbose', default=False)
+    return parser.parse_args()
+
+
 if __name__ == '__main__':
     try:
         args = parsearguments()
-        apikey = 'cf34b6d0fc8d5d2924ba67c7158739a3'
-        apisecret = 'eca90abc0e259384'
-        userid = '95962563@N02'
+        conf = ConfigParser.SafeConfigParser()
+        conf.read(os.path.dirname(__file__) + '/flickr.ini')
+        apikey = conf.get('flickr', 'apikey')
+        apisecret = conf.get('flickr', 'apisecret')
+        userid = conf.get('flickr', 'userid')
         flickr = FlickrClient(apikey, apisecret, userid)
         if args.tag:
             fsencoding = sys.getfilesystemencoding() or sys.getdefaultencoding()
