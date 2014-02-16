@@ -3,18 +3,17 @@
 
 import argparse
 import re
-import optparse
 import os
 import sqlite3
 from pprint import pprint
 
 def parsearguments():
     parser = argparse.ArgumentParser(description='creates annotation data')
+    parser.add_argument('dbname', help='database name')
     parser.add_argument('-p', '--positive', dest='positivefilename',
-                      default='positive.dat')
+                        default='positive.dat')
     parser.add_argument('-n', '--negative', dest='negativefilename',
-                      default='negative.dat')
-    parser.add_argument('-d', '--database', dest='dbname', default='samples.db')
+                        default='negative.dat')
     return parser.parse_args()
     
 def connectdb(dbname):
