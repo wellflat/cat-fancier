@@ -1,21 +1,18 @@
 #!/usr/local/bin/python
 # -*- coding: utf-8 -*-
 
-import optparse
+import argparse
 import os
 import subprocess
 import sys
 import time
 from pprint import pprint
 
-def createparser():
-    parser = optparse.OptionParser()
-    parser.add_option('-p', '--positive', dest='positivefilename',
-                      default='positive.dat')
-    return parser
 
-def countline(filename):
-    return len(open(filename).readlines())
+def parsearguments():
+    parser = argparse.ArgumentParser(description='create sample for training cascade')
+    parser.add_argument('positivefilename', help='positive sample file')
+    return parser.parse_args()
 
 def createsamples(positivefile):
     os.environ['PATH'] = '/bin:/usr/bin:/usr/local/bin'
@@ -23,8 +20,8 @@ def createsamples(positivefile):
     vecdir = cwd + 'vec/'
     if not os.path.isdir(vecdir):
         os.mkdir(vecdir)
-    linecount = countline(positivefile)
-    print(linecount)
+    linecount = len(open(positivefile).readlines())
+    print('samples: %d' % (linecount,))
     cmdline = ['opencv_createsamples', '-info', positivefile,
                '-vec', vecdir + positivefile + '.vec',
                '-num', str(linecount)]
@@ -49,7 +46,7 @@ def traincascade():
     pass
 
 if __name__ == '__main__':
-    parser = createparser()
-    (options, args) = parser.parse_args()
-    positivefilename = options.positivefilename
+    args = parsearguments()
+    positivefilename = args.positivefilename
     createsamples(positivefilename)
+    
