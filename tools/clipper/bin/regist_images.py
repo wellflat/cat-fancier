@@ -41,7 +41,7 @@ def registimages(dbname, imagedir):
 if __name__ == '__main__':
     args = parsearguments()
     dbname = args.dbname
-    imagedir = 'static/images/flickr'
+    imagedir = 'static/images/catdata/CAT_00'
     registimages(dbname, imagedir)
         
         
