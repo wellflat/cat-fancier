@@ -14,10 +14,8 @@ def parsearguments():
     parser.add_argument('positivefilename', help='positive sample file')
     return parser.parse_args()
 
-def createsamples(positivefile):
+def createsamples(positivefile, vecdir='./vec'):
     os.environ['PATH'] = '/bin:/usr/bin:/usr/local/bin'
-    cwd = './'
-    vecdir = cwd + 'vec/'
     if not os.path.isdir(vecdir):
         os.mkdir(vecdir)
     linecount = len(open(positivefile).readlines())
@@ -26,7 +24,7 @@ def createsamples(positivefile):
                '-vec', vecdir + positivefile + '.vec',
                '-num', str(linecount)]
     try:
-        p = subprocess.Popen(cmdline, cwd=cwd, shell=False,
+        p = subprocess.Popen(cmdline, cwd='./', shell=False,
                              stdin=subprocess.PIPE,
                              stdout=subprocess.PIPE,
                              stderr=subprocess.STDOUT, close_fds=True)
@@ -43,7 +41,28 @@ def createsamples(positivefile):
     print('ret: %d' % (ret,))
 
 def traincascade():
-    pass
+    cmdline = [
+        'opencv_traincascade', '-data', dstdir, '-vec', vecfile,
+        '-bg', bgfile, '-numPos', numpos, '-numNeg', numneg,
+        '-featureType', 'LBP', '-maxFalseAlarmRate', maxfarate
+    ]
+    try:
+        p = subprocess.Popen(cmdline, cwd='./', shell=False,
+                             stdin=subprocess.PIPE,
+                             stdout=subprocess.PIPE,
+                             stderr=subprocess.STDOUT, close_fds=True)
+    except OSError as e:
+        print(e)
+        sys.exit(-1)
+
+    while True:
+        line = p.stdout.readline()
+        if not line:
+            break
+        print(line.rstrip())
+    ret = p.wait()
+    print('ret: %d' % (ret,))
+
 
 if __name__ == '__main__':
     args = parsearguments()
