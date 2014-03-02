@@ -8,8 +8,10 @@ import cv2 as cv
 def parsearguments():
     parser = argparse.ArgumentParser(description='object detection using cascade classifier')
     parser.add_argument('imagefilename', help='image file name')
-    parser.add_argument('cascadefilename', help='cascade file name')
-    parser.add_argument('-o', '--output', dest='output')
+    parser.add_argument('-c', '--cascade', dest='cascadefilename', help='cascade file name',
+                        default='models/cat/lbp/cascade.xml')
+    parser.add_argument('-o', '--output', dest='output',
+                        default='box/detect.jpg')
     return parser.parse_args()
 
 def detect(imagefilename, cascadefilename):
@@ -24,7 +26,7 @@ def detect(imagefilename, cascadefilename):
 if __name__ == '__main__':
     args = parsearguments()
     result = detect(args.imagefilename, args.cascadefilename)
-    cv.imwrite('box/detect.jpg', result)
+    cv.imwrite(args.output, result)
     
     
 
