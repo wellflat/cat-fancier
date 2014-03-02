@@ -21,7 +21,7 @@ def createsamples(positivefile, vecdir='./vec'):
     linecount = len(open(positivefile).readlines())
     print('samples: %d' % (linecount,))
     cmdline = ['opencv_createsamples', '-info', positivefile,
-               '-vec', vecdir + positivefile + '.vec',
+               '-vec', vecdir + '/' + positivefile + '.vec',
                '-num', str(linecount)]
     try:
         p = subprocess.Popen(cmdline, cwd='./', shell=False,
