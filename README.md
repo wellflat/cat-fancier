@@ -1,4 +1,6 @@
-Cat Recognition Engine
+Cat Fancier
 ===============
+
+cat detection, recognition, classifier engine
 
 
