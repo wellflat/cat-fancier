@@ -16,6 +16,9 @@ def parsearguments():
 
 def detect(imagefilename, cascadefilename):
     srcimg = cv.imread(imagefilename)
+    if srcimg is None:
+        print('cannot load image')
+        sys.exit(-1)
     cascade = cv.CascadeClassifier(cascadefilename)
     objects = cascade.detectMultiScale(srcimg, 1.1, 3)
     for (x, y, w, h) in objects:

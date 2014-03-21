@@ -6,8 +6,12 @@
 
 int main(int argc, char** argv) {
   using namespace std;
+  if(argc != 3) {
+    cerr << "./_objdetect [image file] [cascade file]" << endl;
+    exit(-1);
+  }
   cv::Mat src_img = cv::imread(argv[1], 1);
-  string cascade_file = "./" + string(argv[2]);
+  string cascade_file = string(argv[2]);
   cv::CascadeClassifier cascade;
   cout << "cascade file: " << cascade_file << endl;
   cascade.load(cascade_file);
@@ -16,7 +20,7 @@ int main(int argc, char** argv) {
     exit(-1);
   }
   vector<cv::Rect> objects;
-  cascade.detectMultiScale(src_img, objects, 1.1, 3, 0, cv::Size(12, 40));
+  cascade.detectMultiScale(src_img, objects, 1.1, 3);
   vector<cv::Rect>::const_iterator iter = objects.begin();
   cout << "count: " << objects.size() << endl;
   while(iter!=objects.end()) {
