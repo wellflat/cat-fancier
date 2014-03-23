@@ -23,6 +23,7 @@ def createsamples(positivefile, vecdir='./vec'):
     cmdline = ['opencv_createsamples', '-info', positivefile,
                '-vec', vecdir + '/' + positivefile + '.vec',
                '-num', str(linecount)]
+    print(' '.join(cmdline))
     try:
         p = subprocess.Popen(cmdline, cwd='./', shell=False,
                              stdin=subprocess.PIPE,
