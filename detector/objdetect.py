@@ -23,7 +23,7 @@ def detect(imagefilename, cascadefilename):
     objects = cascade.detectMultiScale(srcimg, 1.1, 3)
     for (x, y, w, h) in objects:
         print(x, y, w, h)
-        cv.rectangle(srcimg, (x, y), (x + w, y + h), (0, 0, 255), 4)
+        cv.rectangle(srcimg, (x, y), (x + w, y + h), (0, 0, 255), 2)
     return srcimg
 
 if __name__ == '__main__':
