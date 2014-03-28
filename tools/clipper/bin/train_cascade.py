@@ -10,19 +10,21 @@ from pprint import pprint
 
 
 def parsearguments():
-    parser = argparse.ArgumentParser(description='create sample for training cascade')
+    parser = argparse.ArgumentParser(description='run cascade training')
     parser.add_argument('positivefilename', help='positive sample file')
+    parser.add_argument('negativefilename', help='negative sample file')
+    parser.add_argument('-f', '--maxfarate', help='max false alarm rate', type=float, default=0.5)
     return parser.parse_args()
 
 def createsamples(positivefile, vecdir='./vec'):
     os.environ['PATH'] = '/bin:/usr/bin:/usr/local/bin'
     if not os.path.isdir(vecdir):
         os.mkdir(vecdir)
-    linecount = len(open(positivefile).readlines())
-    print('samples: %d' % (linecount,))
+    numpos = len(open(positivefile).readlines())
+    print('samples: %d' % (numpos,))
+    vecfile = vecdir + '/' + positivefile + '.vec'
     cmdline = ['opencv_createsamples', '-info', positivefile,
-               '-vec', vecdir + '/' + positivefile + '.vec',
-               '-num', str(linecount)]
+               '-vec', vecfile, '-num', str(numpos)]
     print(' '.join(cmdline))
     try:
         p = subprocess.Popen(cmdline, cwd='./', shell=False,
@@ -41,11 +43,15 @@ def createsamples(positivefile, vecdir='./vec'):
     ret = p.wait()
     print('ret: %d' % (ret,))
 
-def traincascade():
+    return (vecfile, numpos)
+
+def traincascade(vecfile, numpos, negativefilename, maxfarate=0.5):
+    numneg = len(open(negativefile).readlines())
+    numpos = numpos*0.85
     cmdline = [
         'opencv_traincascade', '-data', dstdir, '-vec', vecfile,
-        '-bg', bgfile, '-numPos', numpos, '-numNeg', numneg,
-        '-featureType', 'LBP', '-maxFalseAlarmRate', maxfarate
+        '-bg', bgfile, '-numPos', str(numpos), '-numNeg', str(numneg),
+        '-featureType', 'LBP', '-maxFalseAlarmRate', str(maxfarate)
     ]
     try:
         p = subprocess.Popen(cmdline, cwd='./', shell=False,
@@ -68,5 +74,9 @@ def traincascade():
 if __name__ == '__main__':
     args = parsearguments()
     positivefilename = args.positivefilename
-    createsamples(positivefilename)
+    negativefilename = args.negativefilename
+    maxfarate = args.maxfarate
+    (vecfile, numpos) = createsamples(positivefilename)
+    print(vecfile, numpos, negativefilename, maxfarate)
+    
     
