@@ -44,6 +44,7 @@ def createsamples(positivefile, vecdir='./vec'):
             break
         print(line.rstrip())
     ret = p.wait()
+    print('')
 
     return (vecfile, numpos)
 
@@ -58,7 +59,9 @@ def traincascade(dstdir, vecfile, numpos, negativefilename, maxfarate=0.5):
         '-featureType', 'LBP', '-maxFalseAlarmRate', str(maxfarate)
     ]
     print(' '.join(cmdline))
+
     try:
+        print('Start cascade training')
         p = subprocess.Popen(cmdline, cwd='./', shell=False,
                              stdin=subprocess.PIPE,
                              stdout=subprocess.PIPE,
@@ -74,6 +77,7 @@ def traincascade(dstdir, vecfile, numpos, negativefilename, maxfarate=0.5):
         print(line.rstrip())
     ret = p.wait()
 
+
 if __name__ == '__main__':
     args = parsearguments()
     positivefilename = args.positivefilename
@@ -83,6 +87,9 @@ if __name__ == '__main__':
     (vecfile, numpos) = createsamples(positivefilename)
     # vecfile = './vec/positive.dat.vec'
     # numpos = len(open(args.positivefilename).readlines())
+    ts = time.clock()
     traincascade(dstdir, vecfile, numpos, negativefilename, 0.4)
+    processtime = int(time.clock() - ts)
+    print('process time: %s', (str(processtime),))
     
     
