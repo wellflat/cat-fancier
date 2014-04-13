@@ -87,9 +87,9 @@ if __name__ == '__main__':
     (vecfile, numpos) = createsamples(positivefilename)
     # vecfile = './vec/positive.dat.vec'
     # numpos = len(open(args.positivefilename).readlines())
-    ts = time.clock()
-    traincascade(dstdir, vecfile, numpos, negativefilename, 0.4)
-    processtime = int(time.clock() - ts)
-    print('process time: %s', (str(processtime),))
+    ts = time.time()
+    traincascade(dstdir, vecfile, numpos, negativefilename, maxfarate)
+    processtime = int(time.time() - ts)
+    print('process time: %s' % (str(processtime),))
     
     
