@@ -13,10 +13,12 @@ def parsearguments():
     parser = argparse.ArgumentParser(description='run cascade training')
     parser.add_argument('positivefilename', help='positive sample file')
     parser.add_argument('negativefilename', help='negative sample file')
-    parser.add_argument('-f', '--maxfarate', help='max false alarm rate',
+    parser.add_argument('-m', '--maxfarate', help='max false alarm rate',
                         type=float, default=0.5)
     parser.add_argument('-d', '--dstdir', help='destination directory',
                         type=str, default='train')
+    parser.add_argument('-f', '--feature', help='feature type',
+                        type=str, default='LBP')
     return parser.parse_args()
 
 def createsamples(positivefile, vecdir='./vec'):
@@ -48,7 +50,7 @@ def createsamples(positivefile, vecdir='./vec'):
 
     return (vecfile, numpos)
 
-def traincascade(dstdir, vecfile, numpos, negativefilename, maxfarate=0.5):
+def traincascade(dstdir, vecfile, numpos, negativefilename, featuretype='LBP', maxfarate=0.5):
     if not os.path.isdir(dstdir):
         os.mkdir(dstdir)
     numpos = int(round(numpos*0.85))
@@ -56,7 +58,7 @@ def traincascade(dstdir, vecfile, numpos, negativefilename, maxfarate=0.5):
     cmdline = [
         'opencv_traincascade', '-data', dstdir, '-vec', vecfile,
         '-bg', negativefilename, '-numPos', str(numpos), '-numNeg', str(numneg),
-        '-featureType', 'LBP', '-maxFalseAlarmRate', str(maxfarate)
+        '-featureType', featuretype, '-maxFalseAlarmRate', str(maxfarate)
     ]
     print(' '.join(cmdline))
 
@@ -84,12 +86,11 @@ if __name__ == '__main__':
     negativefilename = args.negativefilename
     maxfarate = args.maxfarate
     dstdir = args.dstdir
+    feature = args.feature
     (vecfile, numpos) = createsamples(positivefilename)
     # vecfile = './vec/positive.dat.vec'
     # numpos = len(open(args.positivefilename).readlines())
     ts = time.time()
-    traincascade(dstdir, vecfile, numpos, negativefilename, maxfarate)
+    traincascade(dstdir, vecfile, numpos, negativefilename, feature, maxfarate)
     processtime = int(time.time() - ts)
     print('process time: %s' % (str(processtime),))
-    
-    
