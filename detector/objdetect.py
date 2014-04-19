@@ -2,12 +2,14 @@
 # -*- coding: utf-8 -*-
 
 import argparse
+import os
+import re
 import sys
 import cv2 as cv
 
 def parsearguments():
     parser = argparse.ArgumentParser(description='object detection using cascade classifier')
-    parser.add_argument('imagefilename', help='image file name')
+    parser.add_argument('-i', '--image', help='image file name')
     parser.add_argument('-c', '--cascade', dest='cascadefilename', help='cascade file name',
                         default='models/cat/lbp/cascade.xml')
     parser.add_argument('-s', '--scale', dest='scalefactor', type=float, default=1.1)
@@ -30,6 +32,13 @@ def detect(imagefilename, cascadefilename, scalefactor, minneighbors):
 
 if __name__ == '__main__':
     args = parsearguments()
-    result = detect(args.imagefilename, args.cascadefilename,
-                    args.scalefactor, args.minneighbors)
-    cv.imwrite(args.output, result)
+    imagedir = 'images/cat'
+    pattern = re.compile('.*[.](jpg|jpeg|png|bmp|gif)$')
+    images = [image for image in os.listdir(imagedir) if re.match(pattern, image)]
+    print(images)
+    for i, image in enumerate(images):
+        imagesrc = os.path.join(imagedir, images[i])
+        result = detect(imagesrc, args.cascadefilename,
+                        args.scalefactor, args.minneighbors)
+        dstfilename = 'box/detect/detect_%s' % (images[i],)
+        cv.imwrite(dstfilename, result)
