@@ -12,8 +12,8 @@ def parsearguments():
     parser.add_argument('-i', '--image', help='image file name')
     parser.add_argument('-c', '--cascade', dest='cascadefilename', help='cascade file name',
                         default='models/cat/lbp/cascade.xml')
-    parser.add_argument('-s', '--scale', dest='scalefactor', type=float, default=1.1)
-    parser.add_argument('-n', '--neighbors', dest='minneighbors', type=int, default=3)
+    parser.add_argument('-s', '--scalefactor', dest='scalefactor', type=float, default=1.1)
+    parser.add_argument('-m', '--minneighbors', dest='minneighbors', type=int, default=3)
     parser.add_argument('-o', '--output', dest='output',
                         default='box/detect.jpg')
     return parser.parse_args()
