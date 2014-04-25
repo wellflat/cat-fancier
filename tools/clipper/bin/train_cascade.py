@@ -19,6 +19,7 @@ def parsearguments():
                         type=str, default='train')
     parser.add_argument('-f', '--feature', help='feature type',
                         type=str, default='LBP')
+    parser.add_argument('-w', '--width', help='width', type=int, default=24)
     return parser.parse_args()
 
 def createsamples(positivefile, vecdir='./vec'):
@@ -50,7 +51,8 @@ def createsamples(positivefile, vecdir='./vec'):
 
     return (vecfile, numpos)
 
-def traincascade(dstdir, vecfile, numpos, negativefilename, featuretype='LBP', maxfarate=0.5):
+def traincascade(dstdir, vecfile, numpos, negativefilename, featuretype='LBP', maxfarate=0.5,
+                 width=24, height=24):
     if not os.path.isdir(dstdir):
         os.mkdir(dstdir)
     numpos = int(round(numpos*0.85))
@@ -58,7 +60,8 @@ def traincascade(dstdir, vecfile, numpos, negativefilename, featuretype='LBP', m
     cmdline = [
         'opencv_traincascade', '-data', dstdir, '-vec', vecfile,
         '-bg', negativefilename, '-numPos', str(numpos), '-numNeg', str(numneg),
-        '-featureType', featuretype, '-maxFalseAlarmRate', str(maxfarate)
+        '-featureType', featuretype, '-maxFalseAlarmRate', str(maxfarate),
+        '-w', str(width), '-h', str(height)
     ]
     print(' '.join(cmdline))
 
@@ -87,10 +90,11 @@ if __name__ == '__main__':
     maxfarate = args.maxfarate
     dstdir = args.dstdir
     feature = args.feature
+    width = args.width
     (vecfile, numpos) = createsamples(positivefilename)
     # vecfile = './vec/positive.dat.vec'
     # numpos = len(open(args.positivefilename).readlines())
     ts = time.time()
-    traincascade(dstdir, vecfile, numpos, negativefilename, feature, maxfarate)
+    traincascade(dstdir, vecfile, numpos, negativefilename, feature, maxfarate, width, width)
     processtime = int(time.time() - ts)
     print('process time: %s' % (str(processtime),))
