@@ -22,7 +22,7 @@ def parsearguments():
     parser.add_argument('-w', '--width', help='width', type=int, default=24)
     return parser.parse_args()
 
-def createsamples(positivefile, vecdir='./vec'):
+def createsamples(positivefile, vecdir='./vec', widht=24, height=24):
     os.environ['PATH'] = '/bin:/usr/bin:/usr/local/bin'
     if not os.path.isdir(vecdir):
         os.mkdir(vecdir)
@@ -30,7 +30,7 @@ def createsamples(positivefile, vecdir='./vec'):
     print('samples: %d' % (numpos,))
     vecfile = vecdir + '/' + positivefile + '.vec'
     cmdline = ['opencv_createsamples', '-info', positivefile,
-               '-vec', vecfile, '-num', str(numpos)]
+               '-vec', vecfile, '-num', str(numpos), '-w', str(width), '-h', str(height)]
     print(' '.join(cmdline))
     try:
         p = subprocess.Popen(cmdline, cwd='./', shell=False,
@@ -91,7 +91,7 @@ if __name__ == '__main__':
     dstdir = args.dstdir
     feature = args.feature
     width = args.width
-    (vecfile, numpos) = createsamples(positivefilename)
+    (vecfile, numpos) = createsamples(positivefilename, width=width, height=width)
     # vecfile = './vec/positive.dat.vec'
     # numpos = len(open(args.positivefilename).readlines())
     ts = time.time()
