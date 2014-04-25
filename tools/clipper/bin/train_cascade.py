@@ -22,7 +22,7 @@ def parsearguments():
     parser.add_argument('-w', '--width', help='width', type=int, default=24)
     return parser.parse_args()
 
-def createsamples(positivefile, vecdir='./vec', widht=24, height=24):
+def createsamples(positivefile, vecdir='./vec', width=24, height=24):
     os.environ['PATH'] = '/bin:/usr/bin:/usr/local/bin'
     if not os.path.isdir(vecdir):
         os.mkdir(vecdir)
