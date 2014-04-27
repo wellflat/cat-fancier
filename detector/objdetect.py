@@ -25,8 +25,10 @@ def detect(imagefilename, cascadefilename, scalefactor, minneighbors):
         sys.exit(-1)
     cascade = cv.CascadeClassifier(cascadefilename)
     objects = cascade.detectMultiScale(srcimg, scalefactor, minneighbors)
+    count = len(objects)
+    print('detection count: %s' % (count,))
     for (x, y, w, h) in objects:
-        print(x, y, w, h)
+        #print(x, y, w, h)
         cv.rectangle(srcimg, (x, y), (x + w, y + h), (0, 0, 255), 2)
     return srcimg
 
