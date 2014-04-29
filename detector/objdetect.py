@@ -37,10 +37,10 @@ if __name__ == '__main__':
     imagedir = 'images/cat'
     pattern = re.compile('.*[.](jpg|jpeg|png|bmp|gif)$')
     images = [image for image in os.listdir(imagedir) if re.match(pattern, image)]
-    print(images)
+    print('target files: %s' % (len(images), ))
     for i, image in enumerate(images):
         imagesrc = os.path.join(imagedir, images[i])
         result = detect(imagesrc, args.cascadefilename,
                         args.scalefactor, args.minneighbors)
-        dstfilename = 'box/detect/detect_%s' % (images[i],)
+        dstfilename = 'box/cat/detect_%s' % (images[i],)
         cv.imwrite(dstfilename, result)
