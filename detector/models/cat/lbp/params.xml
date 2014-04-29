@@ -3,8 +3,8 @@
 <params>
   <stageType>BOOST</stageType>
   <featureType>LBP</featureType>
-  <height>32</height>
-  <width>32</width>
+  <height>40</height>
+  <width>40</width>
   <stageParams>
     <boostType>GAB</boostType>
     <minHitRate>9.9500000476837158e-01</minHitRate>
