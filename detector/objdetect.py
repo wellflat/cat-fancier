@@ -34,6 +34,7 @@ def detect(imagefilename, cascadefilename, scalefactor, minneighbors):
 
 if __name__ == '__main__':
     args = parsearguments()
+    print('cascade file: %s' % (args.cascadefilename,))
     imagedir = 'images/cat'
     pattern = re.compile('.*[.](jpg|jpeg|png|bmp|gif)$')
     images = [image for image in os.listdir(imagedir) if re.match(pattern, image)]
