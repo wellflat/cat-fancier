@@ -4,7 +4,7 @@
 import os
 import re
 
-def createlabels(imagedir, labeldata, labelfilename):
+def writetrainlabels(imagedir, labeldata, labelfilename):
     labelfile = open(labelfilename, 'w')
     for key, label in labeldata.iteritems():
         pattern = re.compile(key)
@@ -12,16 +12,24 @@ def createlabels(imagedir, labeldata, labelfilename):
         print(key,label)
         print(len(images))
         for image in images:
-            labelstr = '%s,%s\n' % (image, label)
+            labelstr = '%s\t%s\n' % (image, label)
             #print(labelstr)
             labelfile.write(labelstr)
 
     labelfile.close()
+
+def readlabels(filename):
+    import csv
+    labeldata = {}
+    reader = csv.reader(file(filename, 'r'), delimiter='\t', lineterminator='\n')
+    for line in reader:
+        labeldata[line[0]] = int(line[1])
+    return labeldata
             
 
 if __name__ == '__main__':
-    labelfile = 'cat_train_label.csv'
-    labeldata = {'Abyssinian':1, 'Bengal':2, 'Birman':3, 'Bombay':4, 'British_Shorthair':5, 'Egyptian_Mau':6, 'Maine_Coon':7, 'Persian':8, 'Ragdoll':9, 'Russian_Blue':10, 'Siamese':11, 'Sphynx':12}
-    imagedir = '../images'
-    createlabels(imagedir, labeldata, labelfile)
+    labelfile = '../data/cat_train_label.tsv'
+    labeldata = readlabels('../data/catlabel.tsv')
+    imagedir = '../../cat_images'
+    writetrainlabels(imagedir, labeldata, labelfile)
     
