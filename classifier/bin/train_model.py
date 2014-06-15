@@ -4,9 +4,10 @@
 import argparse
 import os
 from sklearn.datasets import load_svmlight_file
-from sklearn.svm import LinearSVC, SVR
-from sklearn.cross_validation import train_test_split
-from sklearn.metrics import accuracy_score, confusion_matrix
+from sklearn.svm import SVC, LinearSVC, SVR
+from sklearn.cross_validation import train_test_split, cross_val_score
+from sklearn.grid_search import GridSearchCV
+from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
 from sklearn.externals import joblib
 
 
@@ -19,18 +20,45 @@ def parsearguments():
 def loaddata(featurefilename):
     return load_svmlight_file(featurefile)
 
-def train(train_data, train_label):
-    estimator = LinearSVC(C=1.0)
-    #estimator = SVR(kernel='rbf', C=1.0)
-    print('start training.')
-    estimator.fit(train_data, train_label)
-    print('complete.')
-    return estimator
+def train(train_data, train_label, test_data, test_label):
+    #clf = LinearSVC(C=1.0)
+    #clf = SVC(C=1.0)
+    #clf = SVR(kernel='rbf', C=1.0)
+    tuned_params = [{'kernel':['rbf'], 'gamma':[1e-3, 1e-4], 'C':[1,10,100,1000],},
+                    {'kernel':['linear'], 'C':[1,10,100,1000]}]
+    scores = ['precision', 'recall']
+    clf = None
+    for score in scores:
+        print("# Tuning hyper-parameters for %s\n" % score)
+        
+        clf = GridSearchCV(SVC(C=1), tuned_params, cv=5, scoring=score)
+        clf.fit(train_data, train_label)
+        
+        print("Best parameters set found on development set:\n")
+        print(clf.best_estimator_)
+        print("")
+        print("Grid scores on development set:\n")
 
-def validation(estimator, test_data, test_label):
-    predict_label = estimator.predict(test_data)
-    print(confusion_matrix(test_label, predict_label))
-    print(accuracy_score(test_label, predict_label))
+        for params, mean_score, scores in clf.grid_scores_:
+            print("%0.3f (+/-%0.03f) for %r" % (mean_score, scores.std() / 2, params))
+        print("")
+
+        print("Detailed classification report:\n")
+        print("The model is trained on the full development set.")
+        print("The scores are computed on the full evaluation set.\n")
+
+        pred_label = clf.predict(test_data)
+        print(classification_report(test_label, pred_label))
+        print("")
+    return clf
+
+def validation(clf, test_data, test_label, train_data_all, train_label_all):
+    print(clf.best_estimator_)
+    pred_label = clf.predict(test_data)
+    print(clf.score(test_data, test_label))
+    print(confusion_matrix(test_label, pred_label))
+    print(accuracy_score(test_label, pred_label))
+    print(classification_report(test_label, pred_label))
 
     
 if __name__ == '__main__':
@@ -38,26 +66,27 @@ if __name__ == '__main__':
     args = parsearguments()
     featurefile = '../data/features.txt'
     traindatafile = '../data/traindata.pkl'
-    labeldatafile = '../data/labeldata.pkl'
+    labeldatafile = '../data/trainlabel.pkl'
     modelfile = '../data/catmodel.pkl'
 
     if args.isload:
         train_data_all = joblib.load(traindatafile)
-        label_data_all = joblib.load(labeldatafile)
+        train_label_all = joblib.load(labeldatafile)
     else:
-        train_data_all, label_data_all = loaddata(featurefile)
+        train_data_all, train_label_all = loaddata(featurefile)
         joblib.dump(train_data_all, traindatafile)
-        joblib.dump(label_data_all, labeldatafile)
+        joblib.dump(train_label_all, labeldatafile)
         
-    train_data, test_data, train_label, test_label = train_test_split(train_data_all, label_data_all)
+    train_data, test_data, train_label, test_label = train_test_split(train_data_all,
+                                                                      train_label_all)
     
     if args.istrain:
-        estimator = train(train_data, train_label)
-        joblib.dump(estimator, modelfile)
+        clf = train(train_data, train_label, test_data, test_label)
+        joblib.dump(clf, modelfile)
     else:
-        estimator = joblib.load(modelfile)
+        clf = joblib.load(modelfile)
 
-    validation(estimator, test_data, test_label)
+    validation(clf, test_data, test_label, train_data_all, train_label_all)
     
     
     
