@@ -2,9 +2,11 @@
 # -*- coding: utf-8 -*-
 
 import csv
+import os
 import caffe
 import matplotlib.pyplot as plt
 import numpy as np
+from sklearn import preprocessing
 from pprint import pprint
 
 def extractfeature(imagedir, labelfilename, modelfilename, pretrainedname,
@@ -27,14 +29,20 @@ def extractfeature(imagedir, labelfilename, modelfilename, pretrainedname,
             caffeinput = np.asarray([net.preprocess('data', in_) for in_ in oversampled])
             net.forward(data=caffeinput)
             feat = net.blobs['fc6wi'].data[4]
-            featurefile.write("%d %s\n" % (int(line[1]), ' '.join(["%d:%f" % (i, fi) for i, fi in enumerate(feat.flatten().tolist(), start=1)])))
+            print(feat.flatten().tolist())
+            scaledfeat = preprocessing.scale(feat.flatten().tolist())
+            print(scaledfeat)
+            #featurefile.write("%d %s\n" % (int(line[1]), ' '.join(["%d:%f" % (i, fi) for i, fi in enumerate(feat.flatten().tolist(), start=1)])))
+            featurefile.write("%d %s\n" % (int(line[1]), ' '.join(["%d:%f" % (i, fi) for i, fi in enumerate(scaledfeat, start=1)])))
         except IOError as e:
             print(e)
     featurefile.close()
     
 
 if __name__ == '__main__':
-    IMAGE_DIR = '../../cat_images'
+    os.chdir(os.path.dirname(__file__))
+    
+    IMAGE_DIR = '../../oxford_cat_images'
     LABEL_FILE = '../data/cat_train_label.tsv'
     MODEL_FILE = '../data/imagenet_feature.prototxt'
     PRETRAINED = '../data/caffe_reference_imagenet_model'
