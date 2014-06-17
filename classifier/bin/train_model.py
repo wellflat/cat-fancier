@@ -52,7 +52,7 @@ def train(train_data, train_label, test_data, test_label):
         print("")
     return clf
 
-def validation(clf, test_data, test_label, train_data_all, train_label_all):
+def report(clf, test_data, test_label, train_data_all, train_label_all):
     print(clf.best_estimator_)
     pred_label = clf.predict(test_data)
     print(clf.score(test_data, test_label))
@@ -86,7 +86,4 @@ if __name__ == '__main__':
     else:
         clf = joblib.load(modelfile)
 
-    validation(clf, test_data, test_label, train_data_all, train_label_all)
-    
-    
-    
+    report(clf, test_data, test_label, train_data_all, train_label_all)

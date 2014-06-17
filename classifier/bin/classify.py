@@ -55,11 +55,11 @@ if __name__ == '__main__':
     IMAGE_FILE = '../data/test/cat/chocolat1.jpg'
     IMAGE_DIR = '../data/test/cat'
     LABEL_FILE = '../data/catlabel.tsv'
-    MODEL_FILE = '../data/imagenet_feature.prototxt'
+    PROTO_FILE = '../data/imagenet_feature.prototxt'
     PRETRAINED = '../data/caffe_reference_imagenet_model'
     MEAN_FILE = '../data/ilsvrc_2012_mean.npy'
     SVM_MODEL_FILE = '../data/catmodel.pkl'
     RESULT_IMAGE = '../tmp/svr.png'
     imagelist = createimagelist(IMAGE_DIR)
     labeldata = getlabels(LABEL_FILE)
-    classify(imagelist, labeldata, MODEL_FILE, PRETRAINED, MEAN_FILE, SVM_MODEL_FILE, RESULT_IMAGE)
+    classify(imagelist, labeldata, PROTO_FILE, PRETRAINED, MEAN_FILE, SVM_MODEL_FILE, RESULT_IMAGE)
