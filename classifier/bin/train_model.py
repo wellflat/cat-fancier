@@ -18,7 +18,8 @@ def parsearguments():
     return parser.parse_args()
     
 def loaddata(featurefilename):
-    return load_svmlight_file(featurefile)
+    return np.load(featurefilename)
+    #return load_svmlight_file(featurefilename)
 
 def train(train_data, train_label, test_data, test_label):
     #clf = LinearSVC(C=1.0)
@@ -50,6 +51,7 @@ def train(train_data, train_label, test_data, test_label):
         pred_label = clf.predict(test_data)
         print(classification_report(test_label, pred_label))
         print("")
+    
     return clf
 
 def report(clf, test_data, test_label, train_data_all, train_label_all):
@@ -64,18 +66,20 @@ def report(clf, test_data, test_label, train_data_all, train_label_all):
 if __name__ == '__main__':
     os.chdir(os.path.dirname(__file__))
     args = parsearguments()
-    featurefile = '../data/features.txt'
-    traindatafile = '../data/traindata.pkl'
-    labeldatafile = '../data/trainlabel.pkl'
-    modelfile = '../data/catmodel.pkl'
+    
+    FEATURE_FILE = '../data/features.txt'
+    FEATURE_FILE = '../data/features.npy'
+    TRAINDATA_FILE = '../data/traindata.pkl'
+    LABELDATA_FILE = '../data/trainlabel.pkl'
+    MODEL_FILE = '../data/catmodel.pkl'
 
     if args.isload:
-        train_data_all = joblib.load(traindatafile)
-        train_label_all = joblib.load(labeldatafile)
+        train_data_all = joblib.load(TRAINDATA_FILE)
+        train_label_all = joblib.load(LABELDATA_FILE)
     else:
-        train_data_all, train_label_all = loaddata(featurefile)
-        joblib.dump(train_data_all, traindatafile)
-        joblib.dump(train_label_all, labeldatafile)
+        train_data_all, train_label_all = loaddata(FEATURE_FILE)
+        joblib.dump(train_data_all, TRAINDATA_FILE)
+        joblib.dump(train_label_all, LABELDATA_FILE)
         
     train_data, test_data, train_label, test_label = train_test_split(train_data_all,
                                                                       train_label_all)
