@@ -6,7 +6,7 @@ import os
 import re
 import caffe
 import numpy as np
-from sklearn.datasets import load_svmlight_file
+from sklearn import preprocessing
 from sklearn.externals import joblib
 
 def classify(imagelist, labeldata, protofilename, pretrainedname,
@@ -28,9 +28,10 @@ def classify(imagelist, labeldata, protofilename, pretrainedname,
         inputdata = np.asarray([net.preprocess('data', in_) for in_ in oversampled])
         net.forward(data=inputdata)
         feature = net.blobs['fc6wi'].data[4]
-        flattenfeature = feat.flatten().tolist()
+        flattenfeature = feature.flatten().tolist()
+        scaledfeature = preprocessing.scale(flattenfeature)
     
-        y = clf.predict(flattenfeature)
+        y = clf.predict(scaledfeature)
         print(labeldata[int(y)])
 
 def getlabels(labelfilename):
