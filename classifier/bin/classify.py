@@ -9,7 +9,7 @@ import numpy as np
 from sklearn import preprocessing
 from sklearn.externals import joblib
 
-def classify(imagelist, labeldata, protofilename, pretrainedname,
+def classify(imagelist, labels, protofilename, pretrainedname,
              meanfilename, svmmodelfile, resultimagename):
     
     net = caffe.Classifier(protofilename, pretrainedname,
@@ -20,7 +20,7 @@ def classify(imagelist, labeldata, protofilename, pretrainedname,
 
     estimator = joblib.load(svmmodelfile)
     clf = estimator.best_estimator_
-    print(labeldata)
+
     for imagefilename in imagelist:
         image = caffe.io.load_image(imagefilename)
         oversampled = caffe.io.oversample([caffe.io.resize_image(image, net.image_dims)],
@@ -32,14 +32,14 @@ def classify(imagelist, labeldata, protofilename, pretrainedname,
         scaledfeature = preprocessing.scale(flattenfeature)
     
         y = clf.predict(scaledfeature)
-        print(labeldata[int(y)])
+        print(labels[int(y)])
 
 def getlabels(labelfilename):
-    labeldata = [None]
+    labels = [None]
     reader = csv.reader(file(labelfilename, 'r'), delimiter='\t', lineterminator='\n')
     for line in reader:
-        labeldata.append(line[0])
-    return labeldata
+        labels.append(line[0])
+    return labels
     
 
 def createimagelist(imagedir):
@@ -60,6 +60,6 @@ if __name__ == '__main__':
     SVM_MODEL_FILE = '../data/catmodel.pkl'
     RESULT_IMAGE = '../tmp/svr.png'
     imagelist = createimagelist(IMAGE_DIR)
-    labeldata = getlabels(LABEL_FILE)
+    labels = getlabels(LABEL_FILE)
     
-    classify(imagelist, labeldata, PROTO_FILE, PRETRAINED, MEAN_FILE, SVM_MODEL_FILE, RESULT_IMAGE)
+    classify(imagelist, labels, PROTO_FILE, PRETRAINED, MEAN_FILE, SVM_MODEL_FILE, RESULT_IMAGE)
