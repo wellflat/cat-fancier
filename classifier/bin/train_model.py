@@ -36,14 +36,15 @@ def getlabels(labelfilename):
 def train(traindata, trainlabel, testdata, testlabel, labels, gridsearch=False, cv=5, jobs=-1):
     clf = None
     if gridsearch:
-        tuned_params = [{'kernel':['rbf'], 'gamma':[1e-3, 1e-4], 'C':[1,10,100,1000],},
-                        {'kernel':['linear'], 'C':[1,10,100,1000]}]
+        tuned_params = [{'kernel':['rbf'], 'gamma':[0.0, 1e-3, 1e-4], 'C':[1, 10, 100, 1000],},
+                        {'kernel':['linear'], 'C':[1, 10, 100, 1000]}]
         scores = ['precision', 'recall']
         print('Start training.')
         for score in scores:
             print("# Tuning hyper-parameters for %s\n" % score)
-        
-            clf = GridSearchCV(SVC(probability=True), tuned_params, cv=cv, scoring=score, n_jobs=jobs)
+
+            svc = SVC(probability=True, verbose=True)
+            clf = GridSearchCV(svc, tuned_params, cv=cv, scoring=score, n_jobs=jobs)
             clf.fit(traindata, trainlabel)
         
             print("Best parameters set found on development set:\n")
