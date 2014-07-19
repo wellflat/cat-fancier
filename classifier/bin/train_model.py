@@ -11,6 +11,7 @@ from sklearn.cross_validation import train_test_split, cross_val_score
 from sklearn.grid_search import GridSearchCV
 from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
 from sklearn.externals import joblib
+import matplotlib.pyplot as plt
 
 
 def parsearguments():
@@ -42,7 +43,7 @@ def train(traindata, trainlabel, testdata, testlabel, labels, gridsearch=False, 
         for score in scores:
             print("# Tuning hyper-parameters for %s\n" % score)
         
-            clf = GridSearchCV(SVC(C=1), tuned_params, cv=cv, scoring=score, n_jobs=jobs)
+            clf = GridSearchCV(SVC(probability=True), tuned_params, cv=cv, scoring=score, n_jobs=jobs)
             clf.fit(traindata, trainlabel)
         
             print("Best parameters set found on development set:\n")
@@ -62,7 +63,7 @@ def train(traindata, trainlabel, testdata, testlabel, labels, gridsearch=False, 
             print(classification_report(testlabel, predlabel, target_names=labels))
             print("")
     else:
-        clf = SVC(kernel='rbf', C=10, gamma=0.0001)
+        clf = SVC(kernel='rbf', C=10, gamma=0.0001, probability=True)
         clf.fit(traindata, trainlabel)
         predlabel = clf.predict(testdata)
         print(classification_report(testlabel, predlabel, target_names=labels))
@@ -71,13 +72,24 @@ def train(traindata, trainlabel, testdata, testlabel, labels, gridsearch=False, 
     return clf
 
 def report(clf, testdata, testlabel, traindata_all, trainlabel_all, labels):
+    print('----- Report -----')
     if hasattr(clf, 'best_estimator_'):
+        print('--- best estimator:')
         print(clf.best_estimator_)
     else:
+        print('--- estimator:')
         print(clf)
+
+    print('test data shape: %s' % (testdata.shape,))
     predlabel = clf.predict(testdata)
-    print(clf.score(testdata, testlabel))
-    print(accuracy_score(testlabel, predlabel))  ## == clf.score
+    predprob = clf.predict_proba(testdata)
+
+    print(predprob[0])
+    print(predprob[0][np.argmax(predprob[0])])
+    
+    #predreg = clf.predict(testdata)
+    #print(clf.score(testdata, predreg))
+    print('accuracy score: %s' % (accuracy_score(testlabel, predlabel),))  ## == clf.score
     print(confusion_matrix(testlabel, predlabel))
     print(classification_report(testlabel, predlabel, target_names=labels))
 
@@ -96,6 +108,7 @@ if __name__ == '__main__':
     MODEL_FILE = '../data/catmodel.pkl'
 
     labels = getlabels(LABELNAME_FILE)
+    print('----- labels -----')
     print(labels)
     
     if args.isread:
