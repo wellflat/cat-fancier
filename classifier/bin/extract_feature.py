@@ -38,7 +38,7 @@ def extractfeature(imagedir, labellistfilename, protofilename, pretrainedname,
         except IOError as e:
             print(e)
 
-    #np.save(featurefilename, features)
+    np.save(featurefilename, features)
     np.save(labelfilename, labels)
     #featurefile.close()
     
@@ -52,8 +52,8 @@ if __name__ == '__main__':
     PRETRAINED = '../data/caffe_reference_imagenet_model'
     MEAN_FILE = '../data/ilsvrc_2012_mean.npy'
     FEATURE_FILE = '../data/features.txt'
-    FEATURE_FILE = '../data/features.npy'
-    LABEL_FILE = '../data/labels.npy'
+    FEATURE_FILE = '../data/features_test.npy'
+    LABEL_FILE = '../data/labels_test.npy'
     extractfeature(IMAGE_DIR, LABELLIST_FILE, PROTO_FILE,
                    PRETRAINED, MEAN_FILE, FEATURE_FILE, LABEL_FILE)
     

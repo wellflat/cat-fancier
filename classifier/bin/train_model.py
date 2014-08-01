@@ -16,9 +16,14 @@ import matplotlib.pyplot as plt
 
 def parsearguments():
     parser = argparse.ArgumentParser(description='train classfication model')
-    parser.add_argument('-t', '--train', action='store_true', dest='istrain', default=False)
-    parser.add_argument('-r', '--read', action='store_true', dest='isread', default=False)
-    parser.add_argument('-g', '--grid', action='store_true', dest='isgrid', default=False)
+    parser.add_argument('-t', '--train', help='train model',
+                        action='store_true', dest='istrain', default=False)
+    parser.add_argument('-g', '--grid', help='use grid search',
+                        action='store_true', dest='isgrid', default=False)
+    parser.add_argument('-c', '--cv', help='number of folds (default 5)',
+                        type=int, dest='cv', default=5)
+    parser.add_argument('-r', '--read', help='read data/label files',
+                        action='store_true', dest='isread', default=False)
     return parser.parse_args()
     
 def readdata(featurefilename, labelfilename=None):
@@ -35,15 +40,18 @@ def getlabels(labelfilename):
     
 def train(traindata, trainlabel, testdata, testlabel, labels, gridsearch=False, cv=5, jobs=-1):
     clf = None
+    print('Start training.')
     if gridsearch:
-        tuned_params = [{'kernel':['rbf'], 'gamma':[0.0, 1e-3, 1e-4], 'C':[1, 10, 100, 1000],},
+        tuned_params = [{'kernel':['rbf'], 'gamma':[0.0, 1e-2, 1e-3, 1e-4],
+                         'C':[1, 10, 100, 1000],},
                         {'kernel':['linear'], 'C':[1, 10, 100, 1000]}]
+        #tuned_params = [{'kernel':['linear'], 'C':[1, 10, 100, 1000]}]
         scores = ['precision', 'recall']
-        print('Start training.')
+        print('number of folds: %s' % (cv,))
         for score in scores:
             print("# Tuning hyper-parameters for %s\n" % score)
 
-            svc = SVC(probability=True, verbose=True)
+            svc = SVC(probability=True, verbose=False)
             clf = GridSearchCV(svc, tuned_params, cv=cv, scoring=score, n_jobs=jobs)
             clf.fit(traindata, trainlabel)
         
@@ -104,8 +112,8 @@ if __name__ == '__main__':
     FEATURE_FILE = '../data/features.npy'  ## numpy.ndarray object file
     LABEL_FILE = '../data/labels.npy'
     LABELNAME_FILE = '../data/catlabel.tsv'
-    TRAINOBJ_FILE = '../data/traindata.pkl'
-    LABELOBJ_FILE = '../data/trainlabel.pkl'
+    TRAINDATA_OBJFILE = '../data/traindata.pkl'
+    TRAINLABEL_OBJFILE = '../data/trainlabel.pkl'
     MODEL_FILE = '../data/catmodel.pkl'
 
     labels = getlabels(LABELNAME_FILE)
@@ -116,17 +124,17 @@ if __name__ == '__main__':
         #traindata_all, trainlabel_all = readdata(FEATURE_FILE)
         traindata_all, trainlabel_all = readdata(FEATURE_FILE, LABEL_FILE)
         print(traindata_all.shape, trainlabel_all.shape)
-        joblib.dump(traindata_all, TRAINOBJ_FILE)
-        joblib.dump(trainlabel_all, LABELOBJ_FILE)
+        joblib.dump(traindata_all, TRAINDATA_OBJFILE)
+        joblib.dump(trainlabel_all, TRAINLABEL_OBJFILE)
     else:
-        traindata_all = joblib.load(TRAINOBJ_FILE)
-        trainlabel_all = joblib.load(LABELOBJ_FILE)
+        traindata_all = joblib.load(TRAINDATA_OBJFILE)
+        trainlabel_all = joblib.load(TRAINLABEL_OBJFILE)
 
     ## split arrays or matrices into random train and test subsets
     traindata, testdata, trainlabel, testlabel = train_test_split(traindata_all, trainlabel_all)
     
     if args.istrain:
-        clf = train(traindata, trainlabel, testdata, testlabel, labels, args.isgrid)
+        clf = train(traindata, trainlabel, testdata, testlabel, labels, args.isgrid, args.cv)
         joblib.dump(clf, MODEL_FILE)
     else:
         clf = joblib.load(MODEL_FILE)
