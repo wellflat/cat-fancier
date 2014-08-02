@@ -4,9 +4,10 @@
 import argparse
 import csv
 import os
+import sys
 import numpy as np
 from sklearn.datasets import load_svmlight_file
-from sklearn.svm import SVC, LinearSVC, SVR
+from sklearn.svm import SVC
 from sklearn.cross_validation import train_test_split, cross_val_score
 from sklearn.grid_search import GridSearchCV
 from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
@@ -22,8 +23,8 @@ def parsearguments():
                         action='store_true', dest='isgrid', default=False)
     parser.add_argument('-c', '--cv', help='number of folds (default 5)',
                         type=int, dest='cv', default=5)
-    parser.add_argument('-r', '--read', help='read data/label files',
-                        action='store_true', dest='isread', default=False)
+    parser.add_argument('-d', '--dump', help='dump data/label pkl files',
+                        action='store_true', dest='isdump', default=False)
     return parser.parse_args()
     
 def readdata(featurefilename, labelfilename=None):
@@ -72,7 +73,7 @@ def train(traindata, trainlabel, testdata, testlabel, labels, gridsearch=False, 
             print(classification_report(testlabel, predlabel, target_names=labels))
             print("")
     else:
-        clf = SVC(kernel='rbf', C=10, gamma=0.0001, probability=True)
+        clf = SVC(kernel='rbf', C=10, gamma=0.0, probability=True)
         clf.fit(traindata, trainlabel)
         predlabel = clf.predict(testdata)
         print(classification_report(testlabel, predlabel, target_names=labels))
@@ -108,27 +109,30 @@ if __name__ == '__main__':
     os.chdir(os.path.dirname(__file__))
     args = parsearguments()
     
-    #FEATURE_FILE = '../data/features.txt'  ## libsvm format text file
-    FEATURE_FILE = '../data/features.npy'  ## numpy.ndarray object file
-    LABEL_FILE = '../data/labels.npy'
-    LABELNAME_FILE = '../data/catlabel.tsv'
-    TRAINDATA_OBJFILE = '../data/traindata.pkl'
-    TRAINLABEL_OBJFILE = '../data/trainlabel.pkl'
-    MODEL_FILE = '../data/catmodel.pkl'
+    #FEATURE_FILE = '../data/cat_features.txt'  ## libsvm format text file
+    FEATURE_FILE = '../data/cat_features.npy'  ## numpy.ndarray object file
+    LABEL_FILE = '../data/cat_train_labels.npy'
+    LABELNAME_FILE = '../data/cat_label.tsv'
+    TRAINDATA_OBJFILE = '../data/train_data.pkl'
+    TRAINLABEL_OBJFILE = '../data/train_labels.pkl'
+    MODEL_FILE = '../data/cat_model.pkl'
 
     labels = getlabels(LABELNAME_FILE)
     print('----- labels -----')
     print(labels)
     
-    if args.isread:
+    if args.isdump:
         #traindata_all, trainlabel_all = readdata(FEATURE_FILE)
         traindata_all, trainlabel_all = readdata(FEATURE_FILE, LABEL_FILE)
         print(traindata_all.shape, trainlabel_all.shape)
         joblib.dump(traindata_all, TRAINDATA_OBJFILE)
         joblib.dump(trainlabel_all, TRAINLABEL_OBJFILE)
+        print('dump files: %s , %s' % (TRAINDATA_OBJFILE, TRAINLABEL_OBJFILE))
+        sys.exit(-1)
     else:
         traindata_all = joblib.load(TRAINDATA_OBJFILE)
         trainlabel_all = joblib.load(TRAINLABEL_OBJFILE)
+        print('load files: %s , %s' % (TRAINDATA_OBJFILE, TRAINLABEL_OBJFILE))
 
     ## split arrays or matrices into random train and test subsets
     traindata, testdata, trainlabel, testlabel = train_test_split(traindata_all, trainlabel_all)

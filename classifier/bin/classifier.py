@@ -10,7 +10,7 @@ from sklearn import preprocessing
 from sklearn.externals import joblib
 
 def classify(imagelist, labels, protofilename, pretrainedname,
-             meanfilename, svmmodelfile, resultimagename):
+             meanfilename, svmmodelfile):
     
     net = caffe.Classifier(protofilename, pretrainedname,
                            mean_file=meanfilename,
@@ -53,13 +53,12 @@ if __name__ == '__main__':
     
     IMAGE_FILE = '../data/test/cat/chocolat1.jpg'
     IMAGE_DIR = '../data/test/cat'
-    LABEL_FILE = '../data/catlabel.tsv'
+    LABEL_FILE = '../data/cat_label.tsv'
     PROTO_FILE = '../data/imagenet_feature.prototxt'
     PRETRAINED = '../data/caffe_reference_imagenet_model'
     MEAN_FILE = '../data/ilsvrc_2012_mean.npy'
-    SVM_MODEL_FILE = '../data/catmodel.pkl'
-    RESULT_IMAGE = '../tmp/svr.png'
+    SVM_MODEL_FILE = '../data/cat_model.pkl'
     imagelist = createimagelist(IMAGE_DIR)
     labels = getlabels(LABEL_FILE)
     
-    classify(imagelist, labels, PROTO_FILE, PRETRAINED, MEAN_FILE, SVM_MODEL_FILE, RESULT_IMAGE)
+    classify(imagelist, labels, PROTO_FILE, PRETRAINED, MEAN_FILE, SVM_MODEL_FILE)
