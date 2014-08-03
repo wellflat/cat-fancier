@@ -7,77 +7,57 @@ import os
 import sys
 import numpy as np
 from sklearn.datasets import load_svmlight_file
-from sklearn.svm import SVC
 from sklearn.cross_validation import train_test_split, cross_val_score
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.grid_search import GridSearchCV
 from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
 from sklearn.externals import joblib
 import matplotlib.pyplot as plt
 
-
 def parsearguments():
     parser = argparse.ArgumentParser(description='train classfication model')
     parser.add_argument('-t', '--train', help='train model',
                         action='store_true', dest='istrain', default=False)
-    parser.add_argument('-g', '--grid', help='use grid search',
-                        action='store_true', dest='isgrid', default=False)
-    parser.add_argument('-c', '--cv', help='number of folds (default 5)',
-                        type=int, dest='cv', default=5)
     parser.add_argument('-d', '--dump', help='dump data/label pkl files',
                         action='store_true', dest='isdump', default=False)
     return parser.parse_args()
-    
+
 def readdata(featurefilename, labelfilename=None):
     if labelfilename is not None:
         return (np.load(featurefilename), np.load(labelfilename))    
     return load_svmlight_file(featurefilename)
-    
+
 def getlabels(labelfilename):
     labels = []
     reader = csv.reader(file(labelfilename, 'r'), delimiter='\t', lineterminator='\n')
     for line in reader:
         labels.append(line[0])
     return labels
-    
-def train(traindata, trainlabel, testdata, testlabel, labels, gridsearch=False, cv=5, jobs=-1):
+
+def train(traindata, trainlabel, testdata, testlabel, labels):
     clf = None
     print('Start training.')
-    if gridsearch:
-        # tuned_params = [{'kernel':['rbf'], 'gamma':[0.0, 1e-2, 1e-3, 1e-4],
-        #                  'C':[1, 10, 100, 1000],},
-        #                 {'kernel':['linear'], 'C':[1, 10, 100, 1000]}]
-        tuned_params = [{'kernel':['linear'], 'C':[0.01, 0.1, 1, 10, 100, 1000]}]
-        scores = ['precision', 'recall']
-        print('number of folds: %s' % (cv,))
-        for score in scores:
-            print("# Tuning hyper-parameters for %s\n" % score)
+    tuned_params = [{'n_estimators': [10, 30, 50, 70, 90, 110, 130, 150], 'max_features': ['auto', 'sqrt', 'log2', None]}]
+    #clf = RandomForestClassifier(n_jobs=-1)
+    clf = GridSearchCV(RandomForestClassifier(), tuned_params, cv=5, scoring='accuracy', n_jobs=-1)
+    clf.fit(traindata, trainlabel)
+    
+    print("Best parameters set found on development set:\n")
+    print(clf.best_estimator_)
+    print("")
+    print("Grid scores on development set:\n")
 
-            svc = SVC(probability=True, verbose=False)
-            clf = GridSearchCV(svc, tuned_params, cv=cv, scoring=score, n_jobs=jobs)
-            clf.fit(traindata, trainlabel)
-        
-            print("Best parameters set found on development set:\n")
-            print(clf.best_estimator_)
-            print("")
-            print("Grid scores on development set:\n")
-            
-            for params, mean_score, scores in clf.grid_scores_:
-                print("%0.3f (+/-%0.03f) for %r" % (mean_score, scores.std() / 2, params))
-            print("")
-
-            print("Detailed classification report:\n")
-            print("The model is trained on the full development set.")
-            print("The scores are computed on the full evaluation set.\n")
-
-            predlabel = clf.predict(testdata)
-            print(classification_report(testlabel, predlabel, target_names=labels))
-            print("")
-    else:
-        clf = SVC(kernel='rbf', C=10, gamma=0.0, probability=True)
-        clf.fit(traindata, trainlabel)
-        predlabel = clf.predict(testdata)
-        print(classification_report(testlabel, predlabel, target_names=labels))
-
+    for params, mean_score, scores in clf.grid_scores_:
+        print("%0.3f (+/-%0.03f) for %r" % (mean_score, scores.std() / 2, params))
+        print("")
+    
+    print("Detailed classification report:\n")
+    print("The model is trained on the full development set.")
+    print("The scores are computed on the full evaluation set.\n")
+    
+    predlabel = clf.predict(testdata)
+    print(classification_report(testlabel, predlabel, target_names=labels))
+    print("")
     print('Finish training.')
     return clf
 
@@ -107,7 +87,7 @@ def report(clf, testdata, testlabel, traindata_all, trainlabel_all, labels):
     print(cm)
     plt.matshow(cm)
     plt.show()
-    plt.savefig('tmp/cm.png')
+    plt.savefig('tmp/cm_rf.png')
     print(classification_report(testlabel, predlabel, target_names=labels))
 
 
@@ -116,21 +96,18 @@ if __name__ == '__main__':
     os.chdir(os.path.dirname(__file__))
     args = parsearguments()
     
-    #FEATURE_FILE = '../data/cat_features.txt'  ## libsvm format text file
     FEATURE_FILE = '../data/cat_features.npy'  ## numpy.ndarray object file
     LABEL_FILE = '../data/cat_train_labels.npy'
     LABELNAME_FILE = '../data/cat_label.tsv'
     TRAINDATA_OBJFILE = '../data/train_data.pkl'
     TRAINLABEL_OBJFILE = '../data/train_labels.pkl'
-    MODEL_FILE = '../data/cat_model.pkl'
-    #MODEL_FILE = '../data/cat_model_linear.pkl'
+    MODEL_FILE = '../data/cat_model_rf.pkl'
 
     labels = getlabels(LABELNAME_FILE)
     print('----- labels -----')
     print(labels)
     
     if args.isdump:
-        #traindata_all, trainlabel_all = readdata(FEATURE_FILE)
         traindata_all, trainlabel_all = readdata(FEATURE_FILE, LABEL_FILE)
         print(traindata_all.shape, trainlabel_all.shape)
         joblib.dump(traindata_all, TRAINDATA_OBJFILE)
@@ -146,7 +123,7 @@ if __name__ == '__main__':
     traindata, testdata, trainlabel, testlabel = train_test_split(traindata_all, trainlabel_all)
     
     if args.istrain:
-        clf = train(traindata, trainlabel, testdata, testlabel, labels, args.isgrid, args.cv)
+        clf = train(traindata, trainlabel, testdata, testlabel, labels)
         joblib.dump(clf, MODEL_FILE)
         print('dump model: %s' % (MODEL_FILE,))
     else:
