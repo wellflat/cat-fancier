@@ -24,6 +24,7 @@ def extractfeature(imagedir, labellistfilename, protofilename, pretrainedname,
         featurefile = open(featurefilename, 'w')
     else:
         print('output: npy format')
+    print('image dims: %s' % (net.image_dims,))
     features = []
     labels = []
     for line in reader:
@@ -57,7 +58,7 @@ def extractfeature(imagedir, labellistfilename, protofilename, pretrainedname,
 if __name__ == '__main__':
     os.chdir(os.path.dirname(__file__))
     
-    IMAGE_DIR = '../../oxford_cat_images'
+    IMAGE_DIR = '../../cat_images'
     LABELLIST_FILE = '../data/cat_train_labels.tsv'
     PROTO_FILE = '../data/imagenet_feature.prototxt'
     PRETRAINED_FILE = '../data/caffe_reference_imagenet_model'

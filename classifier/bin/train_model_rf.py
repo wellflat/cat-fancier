@@ -83,11 +83,7 @@ def report(clf, testdata, testlabel, traindata_all, trainlabel_all, labels):
     #predreg = clf.predict(testdata)
     #print(clf.score(testdata, predreg))
     print('accuracy score: %s' % (accuracy_score(testlabel, predlabel),))  ## == clf.score
-    cm = confusion_matrix(testlabel, predlabel)
-    print(cm)
-    plt.matshow(cm)
-    plt.show()
-    plt.savefig('tmp/cm_rf.png')
+    print(confusion_matrix(testlabel, predlabel))
     print(classification_report(testlabel, predlabel, target_names=labels))
 
 

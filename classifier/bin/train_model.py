@@ -45,7 +45,7 @@ def train(traindata, trainlabel, testdata, testlabel, labels, gridsearch=False, 
     if gridsearch:
         # tuned_params = [{'kernel':['rbf'], 'gamma':[0.0, 1e-2, 1e-3, 1e-4],
         #                  'C':[1, 10, 100, 1000],},
-        #                 {'kernel':['linear'], 'C':[1, 10, 100, 1000]}]
+        #                 {'kernel':['linear'], 'C':[0.01, 0.1, 1, 10, 100, 1000]}]
         tuned_params = [{'kernel':['linear'], 'C':[0.01, 0.1, 1, 10, 100, 1000]}]
         scores = ['precision', 'recall']
         print('number of folds: %s' % (cv,))
@@ -103,13 +103,8 @@ def report(clf, testdata, testlabel, traindata_all, trainlabel_all, labels):
     #predreg = clf.predict(testdata)
     #print(clf.score(testdata, predreg))
     print('accuracy score: %s' % (accuracy_score(testlabel, predlabel),))  ## == clf.score
-    cm = confusion_matrix(testlabel, predlabel)
-    print(cm)
-    plt.matshow(cm)
-    plt.show()
-    plt.savefig('tmp/cm.png')
+    print(confusion_matrix(testlabel, predlabel))
     print(classification_report(testlabel, predlabel, target_names=labels))
-
 
     
 if __name__ == '__main__':

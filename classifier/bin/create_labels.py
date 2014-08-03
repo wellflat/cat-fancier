@@ -28,8 +28,8 @@ def readlabels(filename):
             
 
 if __name__ == '__main__':
-    labelfile = '../data/cat_train_label.tsv'
-    labeldata = readlabels('../data/catlabel.tsv')
+    labelfile = '../data/cat_train_labels.tsv'
+    labeldata = readlabels('../data/cat_label.tsv')
     imagedir = '../../cat_images'
     writetrainlabels(imagedir, labeldata, labelfile)
     
