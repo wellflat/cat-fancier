@@ -7,7 +7,7 @@ import os
 import sys
 import numpy as np
 from sklearn.datasets import load_svmlight_file
-from sklearn.svm import SVC
+from sklearn.svm import SVC, LinearSVC
 from sklearn.cross_validation import train_test_split, cross_val_score
 from sklearn.grid_search import GridSearchCV
 from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
@@ -41,11 +41,12 @@ def getlabels(labelfilename):
     
 def train(traindata, trainlabel, testdata, testlabel, labels, gridsearch=False, cv=5, jobs=-1):
     clf = None
-    print('Start training.')
+    print('---------- Start training. ----------')
     if gridsearch:
         tuned_params = [{'kernel':['rbf'], 'C':np.logspace(-2, 2, 10),
                          'gamma':np.logspace(-4, 4, 10),},]
-        # tuned_params = [{'kernel':['linear'], 'C':[0.01, 0.1, 1, 10, 100, 1000]}]
+        # tuned_params = [{'kernel':['linear'], 'C':np.logspace(-2, 2, 10)}]
+        
         print('number of folds: %s' % (cv,))
         print('params grid: %s' % (tuned_params,))
 
@@ -55,44 +56,38 @@ def train(traindata, trainlabel, testdata, testlabel, labels, gridsearch=False, 
         clf = GridSearchCV(svc, tuned_params, cv=cv, scoring='accuracy', n_jobs=jobs)
         clf.fit(traindata, trainlabel)
         
-        print("Best parameters set found on development set:\n")
+        print("# Best parameters set found on development set:\n")
         print(clf.best_estimator_)
         print("")
-        print("Grid scores on development set:\n")
+        print("# Grid scores on development set:\n")
             
         for params, mean_score, scores in clf.grid_scores_:
             print("%0.3f (+/-%0.03f) for %r" % (mean_score, scores.std() / 2, params))
         print("")
-
-        print("Detailed classification report:\n")
-        print("The model is trained on the full development set.")
-        print("The scores are computed on the full evaluation set.\n")
-
-        predlabel = clf.predict(testdata)
-        print(classification_report(testlabel, predlabel, target_names=labels))
-        print("")
     else:
-        clf = SVC(kernel='rbf', C=10, gamma=0.0, probability=True)
+        clf = LinearSVC(C=10, probability=True)
         clf.fit(traindata, trainlabel)
-        predlabel = clf.predict(testdata)
-        print(classification_report(testlabel, predlabel, target_names=labels))
 
-    print('Finish training.')
+    print("# Detailed classification report:\n")
+    print("")
+    predlabel = clf.predict(testdata)
+    print(classification_report(testlabel, predlabel, target_names=labels))
+    print('---------- Finish training. ----------')
     return clf
 
 def report(clf, testdata, testlabel, traindata_all, trainlabel_all, labels):
-    print('----- Report -----')
+    print('# ----- Report -----')
     if hasattr(clf, 'best_estimator_'):
-        print('--- best estimator:')
+        print('## --- best estimator:')
         print(clf.best_estimator_)
     else:
-        print('--- estimator:')
+        print('## --- estimator:')
         print(clf)
 
     # testdata = traindata_all
     # testlabel = trainlabel_all
 
-    print('test data shape: %s' % (testdata.shape,))
+    print('## test data shape: %s' % (testdata.shape,))
     predlabel = clf.predict(testdata)
     predprob = clf.predict_proba(testdata)
 
@@ -101,7 +96,7 @@ def report(clf, testdata, testlabel, traindata_all, trainlabel_all, labels):
     
     #predreg = clf.predict(testdata)
     #print(clf.score(testdata, predreg))
-    print('accuracy score: %s' % (accuracy_score(testlabel, predlabel),))  ## == clf.score
+    print('## accuracy score: %s' % (accuracy_score(testlabel, predlabel),))  ## == clf.score
     cm = confusion_matrix(testlabel, predlabel)
     print(cm)
     np.save('svm_cm.pkl', cm)
@@ -118,12 +113,12 @@ if __name__ == '__main__':
     LABELNAME_FILE = '../data/cat_label.tsv'
     TRAINDATA_OBJFILE = '../data/train_data.pkl'
     TRAINLABEL_OBJFILE = '../data/train_labels.pkl'
-    #MODEL_FILE = '../data/cat_model.pkl'
-    #MODEL_FILE = '../data/cat_model_linear.pkl'
-    MODEL_FILE = '../data/cat_model_test.pkl'
+    #MODEL_FILE = '../data/models/cat_model.pkl'
+    #MODEL_FILE = '../data/models/cat_model_linear.pkl'
+    MODEL_FILE = '../data/models/cat_model_test.pkl'
 
     labels = getlabels(LABELNAME_FILE)
-    print('----- labels -----')
+    print('----- target labels -----')
     print(labels)
     
     if args.isdump:
