@@ -18,6 +18,8 @@ def parsearguments():
     parser = argparse.ArgumentParser(description='train classfication model')
     parser.add_argument('-t', '--train', help='train model',
                         action='store_true', dest='istrain', default=False)
+    parser.add_argument('-c', '--cv', help='number of folds (default 5)',
+                        type=int, dest='cv', default=5)
     parser.add_argument('-d', '--dump', help='dump data/label pkl files',
                         action='store_true', dest='isdump', default=False)
     return parser.parse_args()
@@ -34,12 +36,13 @@ def getlabels(labelfilename):
         labels.append(line[0])
     return labels
 
-def train(traindata, trainlabel, testdata, testlabel, labels):
+def train(traindata, trainlabel, testdata, testlabel, labels, cv=5):
     clf = None
     print('Start training.')
-    tuned_params = [{'n_estimators': [10, 30, 50, 70, 90, 110, 130, 150], 'max_features': ['auto', 'sqrt', 'log2', None]}]
-    #clf = RandomForestClassifier(n_jobs=-1)
-    clf = GridSearchCV(RandomForestClassifier(), tuned_params, cv=5, scoring='accuracy', n_jobs=-1)
+    tuned_params = [{'n_estimators': [10, 30, 50, 70, 90, 110, 130, 150],
+                     'max_features': ['auto', 'log2', None]}]  ## auto == sqrt
+    clf = GridSearchCV(RandomForestClassifier(), tuned_params,
+                       cv=cv, scoring='accuracy', n_jobs=-1)
     clf.fit(traindata, trainlabel)
     
     print("Best parameters set found on development set:\n")
@@ -119,7 +122,7 @@ if __name__ == '__main__':
     traindata, testdata, trainlabel, testlabel = train_test_split(traindata_all, trainlabel_all)
     
     if args.istrain:
-        clf = train(traindata, trainlabel, testdata, testlabel, labels)
+        clf = train(traindata, trainlabel, testdata, testlabel, labels, args.cv)
         joblib.dump(clf, MODEL_FILE)
         print('dump model: %s' % (MODEL_FILE,))
     else:

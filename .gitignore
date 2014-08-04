@@ -23,6 +23,8 @@ rdoc
 pkg
 
 ## PROJECT::SPECIFIC
+*.log
 *.dat
 *.vec
-*.npy
+#*.npy
+classifier/data/models/*.npy

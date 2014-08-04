@@ -43,35 +43,37 @@ def train(traindata, trainlabel, testdata, testlabel, labels, gridsearch=False, 
     clf = None
     print('Start training.')
     if gridsearch:
-        # tuned_params = [{'kernel':['rbf'], 'gamma':[0.0, 1e-2, 1e-3, 1e-4],
+        # tuned_params = [{'kernel':['rbf'], 'gamma':[0.0, 1e-1, 1e-2, 1e-3, 1e-4],
         #                  'C':[1, 10, 100, 1000],},
         #                 {'kernel':['linear'], 'C':[0.01, 0.1, 1, 10, 100, 1000]}]
-        tuned_params = [{'kernel':['linear'], 'C':[0.01, 0.1, 1, 10, 100, 1000]}]
-        scores = ['precision', 'recall']
+        tuned_params = [{'kernel':['rbf'], 'C':np.logspace(-2, 2, 10),
+                         'gamma':np.logspace(-4, 4, 10),},]
+        # tuned_params = [{'kernel':['linear'], 'C':[0.01, 0.1, 1, 10, 100, 1000]}]
         print('number of folds: %s' % (cv,))
-        for score in scores:
-            print("# Tuning hyper-parameters for %s\n" % score)
+        print('params grid: %s' % (tuned_params,))
 
-            svc = SVC(probability=True, verbose=False)
-            clf = GridSearchCV(svc, tuned_params, cv=cv, scoring=score, n_jobs=jobs)
-            clf.fit(traindata, trainlabel)
+        print("# Tuning hyper-parameters for accuracy\n")
+
+        svc = SVC(probability=True, verbose=False)
+        clf = GridSearchCV(svc, tuned_params, cv=cv, scoring='accuracy', n_jobs=jobs)
+        clf.fit(traindata, trainlabel)
         
-            print("Best parameters set found on development set:\n")
-            print(clf.best_estimator_)
-            print("")
-            print("Grid scores on development set:\n")
+        print("Best parameters set found on development set:\n")
+        print(clf.best_estimator_)
+        print("")
+        print("Grid scores on development set:\n")
             
-            for params, mean_score, scores in clf.grid_scores_:
-                print("%0.3f (+/-%0.03f) for %r" % (mean_score, scores.std() / 2, params))
-            print("")
+        for params, mean_score, scores in clf.grid_scores_:
+            print("%0.3f (+/-%0.03f) for %r" % (mean_score, scores.std() / 2, params))
+        print("")
 
-            print("Detailed classification report:\n")
-            print("The model is trained on the full development set.")
-            print("The scores are computed on the full evaluation set.\n")
+        print("Detailed classification report:\n")
+        print("The model is trained on the full development set.")
+        print("The scores are computed on the full evaluation set.\n")
 
-            predlabel = clf.predict(testdata)
-            print(classification_report(testlabel, predlabel, target_names=labels))
-            print("")
+        predlabel = clf.predict(testdata)
+        print(classification_report(testlabel, predlabel, target_names=labels))
+        print("")
     else:
         clf = SVC(kernel='rbf', C=10, gamma=0.0, probability=True)
         clf.fit(traindata, trainlabel)
@@ -103,7 +105,9 @@ def report(clf, testdata, testlabel, traindata_all, trainlabel_all, labels):
     #predreg = clf.predict(testdata)
     #print(clf.score(testdata, predreg))
     print('accuracy score: %s' % (accuracy_score(testlabel, predlabel),))  ## == clf.score
-    print(confusion_matrix(testlabel, predlabel))
+    cm = confusion_matrix(testlabel, predlabel)
+    print(cm)
+    np.save('svm_cm.pkl', cm)
     print(classification_report(testlabel, predlabel, target_names=labels))
 
     
@@ -117,8 +121,9 @@ if __name__ == '__main__':
     LABELNAME_FILE = '../data/cat_label.tsv'
     TRAINDATA_OBJFILE = '../data/train_data.pkl'
     TRAINLABEL_OBJFILE = '../data/train_labels.pkl'
-    MODEL_FILE = '../data/cat_model.pkl'
+    #MODEL_FILE = '../data/cat_model.pkl'
     #MODEL_FILE = '../data/cat_model_linear.pkl'
+    MODEL_FILE = '../data/cat_model_test.pkl'
 
     labels = getlabels(LABELNAME_FILE)
     print('----- labels -----')
