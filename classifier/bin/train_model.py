@@ -43,9 +43,6 @@ def train(traindata, trainlabel, testdata, testlabel, labels, gridsearch=False, 
     clf = None
     print('Start training.')
     if gridsearch:
-        # tuned_params = [{'kernel':['rbf'], 'gamma':[0.0, 1e-1, 1e-2, 1e-3, 1e-4],
-        #                  'C':[1, 10, 100, 1000],},
-        #                 {'kernel':['linear'], 'C':[0.01, 0.1, 1, 10, 100, 1000]}]
         tuned_params = [{'kernel':['rbf'], 'C':np.logspace(-2, 2, 10),
                          'gamma':np.logspace(-4, 4, 10),},]
         # tuned_params = [{'kernel':['linear'], 'C':[0.01, 0.1, 1, 10, 100, 1000]}]
