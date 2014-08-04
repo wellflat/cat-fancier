@@ -26,5 +26,4 @@ pkg
 *.log
 *.dat
 *.vec
-#*.npy
-classifier/data/models/*.npy
+*.npy
