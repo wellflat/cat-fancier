@@ -8,6 +8,7 @@ import sys
 import numpy as np
 from sklearn.datasets import load_svmlight_file
 from sklearn.svm import SVC, LinearSVC
+from sklearn.linear_model import LogisticRegression
 from sklearn.cross_validation import train_test_split, cross_val_score
 from sklearn.grid_search import GridSearchCV
 from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
@@ -43,30 +44,41 @@ def train(traindata, trainlabel, testdata, testlabel, labels, gridsearch=False, 
     clf = None
     print('---------- Start training. ----------')
     if gridsearch:
-        tuned_params = [{'kernel':['rbf'], 'C':np.logspace(-2, 2, 10),
-                         'gamma':np.logspace(-4, 4, 10),},]
-        # tuned_params = [{'kernel':['linear'], 'C':np.logspace(-2, 2, 10)}]
+        tuned_params = [{'kernel':['rbf'], 'C':np.logspace(0, 2, 20),
+                         'gamma':np.logspace(-5, -3, 20)},]
+        tuned_params = [{'C':[1.0],},]
+                        
         
         print('number of folds: %s' % (cv,))
         print('params grid: %s' % (tuned_params,))
 
         print("# Tuning hyper-parameters for accuracy\n")
 
-        svc = SVC(probability=True, verbose=False)
-        clf = GridSearchCV(svc, tuned_params, cv=cv, scoring='accuracy', n_jobs=jobs)
+        svc = SVC(probability=False, verbose=False)
+        lr = LogisticRegression()
+        #clf = GridSearchCV(svc, tuned_params, cv=cv, scoring='accuracy', n_jobs=jobs)
+        clf = GridSearchCV(lr, tuned_params, cv=cv, scoring='accuracy', n_jobs=jobs)
         clf.fit(traindata, trainlabel)
         
         print("# Best parameters set found on development set:\n")
         print(clf.best_estimator_)
         print("")
         print("# Grid scores on development set:\n")
-            
         for params, mean_score, scores in clf.grid_scores_:
             print("%0.3f (+/-%0.03f) for %r" % (mean_score, scores.std() / 2, params))
         print("")
     else:
-        clf = LinearSVC(C=10, probability=True)
+        tuned_params = [{'C':np.logspace(-4, -3, 20)}]
+        #tuned_params = [{'C':[0.1, 1.0, 10]}]
+        clf = GridSearchCV(LinearSVC(), tuned_params, cv=cv, scoring='accuracy', n_jobs=jobs)
         clf.fit(traindata, trainlabel)
+        print("# Best parameters set found on development set:\n")
+        print(clf.best_estimator_)
+        print("")
+        print("# Grid scores on development set:\n")
+        for params, mean_score, scores in clf.grid_scores_:
+            print("%0.3f (+/-%0.03f) for %r" % (mean_score, scores.std() / 2, params))
+        print("")
 
     print("# Detailed classification report:\n")
     print("")
@@ -76,7 +88,7 @@ def train(traindata, trainlabel, testdata, testlabel, labels, gridsearch=False, 
     return clf
 
 def report(clf, testdata, testlabel, traindata_all, trainlabel_all, labels):
-    print('# ----- Report -----')
+    print('# ----- Classification report -----')
     if hasattr(clf, 'best_estimator_'):
         print('## --- best estimator:')
         print(clf.best_estimator_)
@@ -90,16 +102,14 @@ def report(clf, testdata, testlabel, traindata_all, trainlabel_all, labels):
     print('## test data shape: %s' % (testdata.shape,))
     predlabel = clf.predict(testdata)
     predprob = clf.predict_proba(testdata)
-
     print(predprob[0])
     print(predprob[0][np.argmax(predprob[0])])
-    
-    #predreg = clf.predict(testdata)
-    #print(clf.score(testdata, predreg))
-    print('## accuracy score: %s' % (accuracy_score(testlabel, predlabel),))  ## == clf.score
+
+    print('## accuracy: %s' % (accuracy_score(testlabel, predlabel),))  ## == clf.score
     cm = confusion_matrix(testlabel, predlabel)
+    print('## confusion matrix')
     print(cm)
-    np.save('svm_cm.pkl', cm)
+    np.save('svm_cm', cm)
     print(classification_report(testlabel, predlabel, target_names=labels))
 
     
@@ -115,10 +125,11 @@ if __name__ == '__main__':
     TRAINLABEL_OBJFILE = '../data/train_labels.pkl'
     #MODEL_FILE = '../data/models/cat_model.pkl'
     #MODEL_FILE = '../data/models/cat_model_linear.pkl'
-    MODEL_FILE = '../data/models/cat_model_test.pkl'
+    #MODEL_FILE = '../data/models/cat_model_test.pkl'
+    MODEL_FILE = '../data/models/cat_model_lr.pkl'
 
     labels = getlabels(LABELNAME_FILE)
-    print('----- target labels -----')
+    print('# ----- Target labels -----')
     print(labels)
     
     if args.isdump:
