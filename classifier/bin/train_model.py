@@ -46,8 +46,7 @@ def train(traindata, trainlabel, testdata, testlabel, labels, gridsearch=False, 
     if gridsearch:
         tuned_params = [{'kernel':['rbf'], 'C':np.logspace(0, 2, 20),
                          'gamma':np.logspace(-5, -3, 20)},]
-        tuned_params = [{'C':[1.0],},]
-                        
+        tuned_params = [{'C':np.logspace(-4, -3, 30),},]
         
         print('number of folds: %s' % (cv,))
         print('params grid: %s' % (tuned_params,))
@@ -101,6 +100,7 @@ def report(clf, testdata, testlabel, traindata_all, trainlabel_all, labels):
 
     print('## test data shape: %s' % (testdata.shape,))
     predlabel = clf.predict(testdata)
+    
     predprob = clf.predict_proba(testdata)
     print(predprob[0])
     print(predprob[0][np.argmax(predprob[0])])
