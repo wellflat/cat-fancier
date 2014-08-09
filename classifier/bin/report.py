@@ -35,7 +35,12 @@ if __name__ == '__main__':
     os.chdir(os.path.dirname(__file__))
     
     cmfilename = '../data/svm_rbf_cm.npy'
+    crfilename = '../data/svm_cr.npy'
     cm = np.load(cmfilename)
+    cr = np.load(crfilename)
+    print(cr)
+    print(dir(cr))
+
     norm = []
     for i in cm:
         a = 0

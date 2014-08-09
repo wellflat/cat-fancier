@@ -46,7 +46,7 @@ def train(traindata, trainlabel, testdata, testlabel, labels, gridsearch=False, 
     if gridsearch:
         tuned_params = [{'kernel':['rbf'], 'C':np.logspace(0, 2, 20),
                          'gamma':np.logspace(-5, -3, 20)},]
-        tuned_params = [{'C':np.logspace(-4, -3, 30),},]
+        tuned_params = [{'C':np.logspace(-4, -3, 3),},]
         
         print('number of folds: %s' % (cv,))
         print('params grid: %s' % (tuned_params,))
@@ -110,7 +110,9 @@ def report(clf, testdata, testlabel, traindata_all, trainlabel_all, labels):
     print('## confusion matrix')
     print(cm)
     np.save('svm_cm', cm)
-    print(classification_report(testlabel, predlabel, target_names=labels))
+    cr = classification_report(testlabel, predlabel, target_names=labels)
+    print(cr)
+    np.save('svm_cr', cr)
 
     
 if __name__ == '__main__':
@@ -126,7 +128,8 @@ if __name__ == '__main__':
     #MODEL_FILE = '../data/models/cat_model.pkl'
     #MODEL_FILE = '../data/models/cat_model_linear.pkl'
     #MODEL_FILE = '../data/models/cat_model_test.pkl'
-    MODEL_FILE = '../data/models/cat_model_lr.pkl'
+    #MODEL_FILE = '../data/models/cat_model_lr.pkl'
+    MODEL_FILE = '../data/models/cat_model_report.pkl'
 
     labels = getlabels(LABELNAME_FILE)
     print('# ----- Target labels -----')

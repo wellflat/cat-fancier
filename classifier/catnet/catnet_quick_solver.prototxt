@@ -1,0 +1,15 @@
+train_net: "catnet_train.prototxt"
+test_net: "catnet_val.prototxt"
+test_iter: 100
+test_interval: 100
+base_lr: 0.01
+lr_policy: "fixed"
+gamma: 0.1
+stepsize: 100000
+display: 100
+max_iter: 4000
+momentum: 0.9
+weight_decay: 0.0005
+snapshot: 4000
+snapshot_prefix: "catnet_train_quick"
+solver_mode: CPU
