@@ -80,7 +80,7 @@ cat_images/Abyssinian_230.jpg 1
 cat_images/Abyssinian_160.jpg 1
 cat_images/Abyssinian_93.jpg 1
 cat_images/Abyssinian_20.jpg 1
-cat_images/Abyssinian_102.mat 1
+cat_images/Abyssinian_102.jpg 1
 cat_images/Abyssinian_126.jpg 1
 cat_images/Abyssinian_174.jpg 1
 cat_images/Abyssinian_146.jpg 1
@@ -130,7 +130,7 @@ cat_images/Abyssinian_152.jpg 1
 cat_images/Abyssinian_63.jpg 1
 cat_images/Abyssinian_34.jpg 1
 cat_images/Abyssinian_54.jpg 1
-cat_images/Abyssinian_100.mat 1
+cat_images/Abyssinian_100.jpg 1
 cat_images/Abyssinian_141.jpg 1
 cat_images/Abyssinian_124.jpg 1
 cat_images/Abyssinian_8.jpg 1
@@ -147,7 +147,7 @@ cat_images/Abyssinian_48.jpg 1
 cat_images/Abyssinian_138.jpg 1
 cat_images/Abyssinian_142.jpg 1
 cat_images/Abyssinian_180.jpg 1
-cat_images/Abyssinian_101.mat 1
+cat_images/Abyssinian_101.jpg 1
 cat_images/Abyssinian_18.jpg 1
 cat_images/Abyssinian_71.jpg 1
 cat_images/Abyssinian_143.jpg 1
