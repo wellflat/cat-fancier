@@ -20,8 +20,6 @@ def parsearguments():
     parser = argparse.ArgumentParser(description='train classfication model')
     parser.add_argument('-t', '--train', help='train model',
                         action='store_true', dest='istrain', default=False)
-    parser.add_argument('-g', '--grid', help='use grid search',
-                        action='store_true', dest='isgrid', default=False)
     parser.add_argument('-c', '--cv', help='number of folds (default 5)',
                         type=int, dest='cv', default=5)
     parser.add_argument('-d', '--dump', help='dump data/label pkl files',
@@ -40,44 +38,34 @@ def getlabels(labelfilename):
         labels.append(line[0])
     return labels
     
-def train(traindata, trainlabel, testdata, testlabel, labels, gridsearch=False, cv=5, jobs=-1):
+def train(traindata, trainlabel, testdata, testlabel, labels,
+          modeltype='lr', cv=5, jobs=-1):
     clf = None
     print('---------- Start training. ----------')
-    if gridsearch:
-        tuned_params = [{'kernel':['rbf'], 'C':np.logspace(0, 2, 20),
-                         'gamma':np.logspace(-5, -3, 20)},]
-        tuned_params = [{'C':np.logspace(-4, -3, 3),},]
+    if modeltype == 'lr':
+        #tuned_params = [{'C':np.logspace(-5, -4, 5),},]
+        tuned_params = [{'C':[0.0001,0.0002,0.0003,0.0004,0.0005],},]
+        model = LogisticRegression()
+    elif modeltype == 'rbf':
+        tuned_params = [{'kernel':['rbf'], 'C':np.logspace(0, 2, 10),
+                         'gamma':np.logspace(-5, -3, 10)},]
+        model = SVC(probability=False)
         
-        print('number of folds: %s' % (cv,))
-        print('params grid: %s' % (tuned_params,))
+    print('number of folds: %s' % (cv,))
+    print('params grid: %s' % (tuned_params,))
 
-        print("# Tuning hyper-parameters for accuracy\n")
+    print("# Tuning hyper-parameters for accuracy\n")
 
-        svc = SVC(probability=False, verbose=False)
-        lr = LogisticRegression()
-        #clf = GridSearchCV(svc, tuned_params, cv=cv, scoring='accuracy', n_jobs=jobs)
-        clf = GridSearchCV(lr, tuned_params, cv=cv, scoring='accuracy', n_jobs=jobs)
-        clf.fit(traindata, trainlabel)
+    clf = GridSearchCV(model, tuned_params, cv=cv, scoring='accuracy', n_jobs=jobs, verbose=10)
+    clf.fit(traindata, trainlabel)
         
-        print("# Best parameters set found on development set:\n")
-        print(clf.best_estimator_)
-        print("")
-        print("# Grid scores on development set:\n")
-        for params, mean_score, scores in clf.grid_scores_:
-            print("%0.3f (+/-%0.03f) for %r" % (mean_score, scores.std() / 2, params))
-        print("")
-    else:
-        tuned_params = [{'C':np.logspace(-4, -3, 20)}]
-        #tuned_params = [{'C':[0.1, 1.0, 10]}]
-        clf = GridSearchCV(LinearSVC(), tuned_params, cv=cv, scoring='accuracy', n_jobs=jobs)
-        clf.fit(traindata, trainlabel)
-        print("# Best parameters set found on development set:\n")
-        print(clf.best_estimator_)
-        print("")
-        print("# Grid scores on development set:\n")
-        for params, mean_score, scores in clf.grid_scores_:
-            print("%0.3f (+/-%0.03f) for %r" % (mean_score, scores.std() / 2, params))
-        print("")
+    print("# Best parameters set found on development set:\n")
+    print(clf.best_estimator_)
+    print("")
+    print("# Grid scores on development set:\n")
+    for params, mean_score, scores in clf.grid_scores_:
+        print("%0.3f (+/-%0.03f) for %r" % (mean_score, scores.std() / 2, params))
+    print("")
 
     print("# Detailed classification report:\n")
     print("")
@@ -101,9 +89,9 @@ def report(clf, testdata, testlabel, traindata_all, trainlabel_all, labels):
     print('## test data shape: %s' % (testdata.shape,))
     predlabel = clf.predict(testdata)
     
-    predprob = clf.predict_proba(testdata)
-    print(predprob[0])
-    print(predprob[0][np.argmax(predprob[0])])
+    # predprob = clf.predict_proba(testdata)
+    # print(predprob[0])
+    # print(predprob[0][np.argmax(predprob[0])])
 
     print('## accuracy: %s' % (accuracy_score(testlabel, predlabel),))  ## == clf.score
     cm = confusion_matrix(testlabel, predlabel)
@@ -128,8 +116,8 @@ if __name__ == '__main__':
     #MODEL_FILE = '../data/models/cat_model.pkl'
     #MODEL_FILE = '../data/models/cat_model_linear.pkl'
     #MODEL_FILE = '../data/models/cat_model_test.pkl'
-    #MODEL_FILE = '../data/models/cat_model_lr.pkl'
-    MODEL_FILE = '../data/models/cat_model_report.pkl'
+    MODEL_FILE = '../data/models/cat_model_lr.pkl'
+    #MODEL_FILE = '../data/models/cat_model_report.pkl'
 
     labels = getlabels(LABELNAME_FILE)
     print('# ----- Target labels -----')
@@ -152,7 +140,7 @@ if __name__ == '__main__':
     traindata, testdata, trainlabel, testlabel = train_test_split(traindata_all, trainlabel_all)
     
     if args.istrain:
-        clf = train(traindata, trainlabel, testdata, testlabel, labels, args.isgrid, args.cv)
+        clf = train(traindata, trainlabel, testdata, testlabel, labels, 'lr', args.cv)
         joblib.dump(clf, MODEL_FILE)
         print('dump model: %s' % (MODEL_FILE,))
     else:

@@ -3,6 +3,7 @@
 
 import csv
 import os
+import sys
 import caffe
 import numpy as np
 from sklearn import preprocessing
@@ -12,10 +13,9 @@ def extractfeature(imagedir, labellistfilename, protofilename, pretrainedname,
                    meanfilename, featurefilename, labelfilename, libsvmformat=False):
 
     print('Start extract features.')
-    net = caffe.Classifier(protofilename, pretrainedname, mean_file=meanfilename,
-                           channel_swap=(2,1,0), input_scale=255)
-    net.set_phase_test()
-    net.set_mode_cpu()
+    mean = np.load(meanfilename)
+    net = caffe.Classifier(protofilename, pretrainedname, mean=mean,
+                           channel_swap=(2,1,0), image_dims=(256,256), raw_scale=255)
     
     reader = csv.reader(file(labellistfilename, 'r'),
                         delimiter='\t', lineterminator='\n')
@@ -37,7 +37,7 @@ def extractfeature(imagedir, labellistfilename, protofilename, pretrainedname,
                                               net.crop_dims)
             inputdata = np.asarray([net.preprocess('data', in_) for in_ in oversampled])
             net.forward(data=inputdata)
-            feature = net.blobs['fc6wi'].data[4]
+            feature = net.blobs['fc6i'].data[4]
             scaledfeature = preprocessing.scale(feature.flatten().tolist())
             if libsvmformat:
                 featurefile.write("%d %s\n" % (label, ' '.join(["%d:%f" % (i, fi) for i, fi in enumerate(scaledfeature, start=1)])))

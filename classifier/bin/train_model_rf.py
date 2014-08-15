@@ -39,10 +39,10 @@ def getlabels(labelfilename):
 def train(traindata, trainlabel, testdata, testlabel, labels, cv=5):
     clf = None
     print('Start training.')
-    tuned_params = [{'n_estimators': [10, 30, 50, 70, 90, 110, 130, 150],
-                     'max_features': ['auto', 'log2', None]}]  ## auto == sqrt
+    tuned_params = [{'n_estimators': range(10,200,10),
+                     'max_features': ['auto', 'log2']}]  ## auto == sqrt
     clf = GridSearchCV(RandomForestClassifier(), tuned_params,
-                       cv=cv, scoring='accuracy', n_jobs=-1)
+                       cv=cv, scoring='accuracy', n_jobs=-1, verbose=10)
     clf.fit(traindata, trainlabel)
     
     print("Best parameters set found on development set:\n")
@@ -78,17 +78,12 @@ def report(clf, testdata, testlabel, traindata_all, trainlabel_all, labels):
 
     print('test data shape: %s' % (testdata.shape,))
     predlabel = clf.predict(testdata)
-    predprob = clf.predict_proba(testdata)
-
-    print(predprob[0])
-    print(predprob[0][np.argmax(predprob[0])])
     
     #predreg = clf.predict(testdata)
     #print(clf.score(testdata, predreg))
     print('accuracy score: %s' % (accuracy_score(testlabel, predlabel),))  ## == clf.score
     print(confusion_matrix(testlabel, predlabel))
     print(classification_report(testlabel, predlabel, target_names=labels))
-
 
     
 if __name__ == '__main__':
