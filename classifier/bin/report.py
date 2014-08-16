@@ -2,45 +2,71 @@
 # -*- coding: utf-8 -*-
 
 import os
+from sklearn.externals import joblib
 import matplotlib.pyplot as plt
 import numpy as np
 
-# cm = [[44,  1,  0,  0,  3,  1,  0,  0,  1,  2,  1,  1],
-#       [ 1, 52,  0,  0,  0,  3,  2,  0,  0,  0,  0,  0],
-#       [ 0,  0, 43,  0,  0,  0,  0,  0,  5,  0,  4,  0],
-#       [ 0,  0,  0, 54,  0,  0,  1,  0,  0,  0,  0,  0],
-#       [ 1,  0,  0,  0, 32,  1,  0,  1,  0,  4,  0,  1],
-#       [ 0,  1,  0,  1,  2, 36,  0,  0,  0,  0,  0,  0],
-#       [ 1,  6,  0,  0,  0,  1, 42,  6,  1,  0,  0,  0],
-#       [ 0,  0,  0,  1,  0,  0,  3, 34,  2,  0,  0,  0],
-#       [ 0,  0, 11,  0,  0,  0,  0,  4, 32,  0,  0,  0],
-#       [ 0,  0,  0,  1,  7,  0,  0,  0,  0, 52,  0,  1],
-#       [ 0,  0,  3,  0,  0,  0,  0,  0,  1,  0, 45,  0],
-#       [ 1,  1,  0,  0,  0,  0,  0,  0,  0,  1,  0, 44]]
+def reportroc(clf, testdata, testlabel, labels):
+    print('## test data shape: %s' % (testdata.shape,))
+    predlabel = clf.predict(testdata)
+    predprob = clf.predict_proba(testdata)
+    # print(predprob[0])
+    # print(predprob[0][np.argmax(predprob[0])])
+    print(confusion_matrix(testlabel, predlabel))
 
-# cm = [[40,  2,  0,  0,  0,  1,  2,  0,  0,  2,  0,  2],
-#       [ 5, 39,  0,  0,  0,  0,  1,  0,  0,  1,  0,  0],
-#       [ 0,  0, 34,  0,  1,  0,  0,  1,  4,  0,  8,  0],
-#       [ 0,  0,  0, 48,  0,  0,  0,  0,  0,  1,  0,  1],
-#       [ 2,  1,  0,  0, 39,  0,  0,  3,  0,  4,  0,  1],
-#       [ 0,  8,  0,  0,  2, 41,  0,  0,  0,  3,  0,  0],
-#       [ 3,  5,  0,  2,  0,  1, 38,  1,  2,  0,  0,  0],
-#       [ 0,  0,  0,  0,  0,  1,  5, 35,  1,  0,  0,  0],
-#       [ 0,  0,  8,  0,  0,  0,  1,  3, 41,  0,  2,  0],
-#       [ 2,  0,  1,  1,  5,  0,  0,  0,  0, 46,  0,  0],
-#       [ 0,  0,  7,  0,  0,  0,  1,  0,  1,  0, 38,  4],
-#       [ 1,  0,  0,  0,  0,  0,  0,  0,  0,  1,  0, 46]]
+    testlabel = label_binarize(testlabel, classes=range(1,13))
+    predlabel = label_binarize(predlabel, classes=range(1,13))
+    nclasses = predlabel.shape[1]
+    fpr = dict()
+    tpr = dict()
+    roc_auc = dict()
+    for i in xrange(nclasses):
+        fpr[i], tpr[i], _ = roc_curve(testlabel[:,i], predlabel[:,i])
+        roc_auc[i] = auc(fpr[i], tpr[i])
 
+    fpr["micro"], tpr["micro"], _ = roc_curve(testlabel.ravel(), predlabel.ravel())
+    roc_auc["micro"] = auc(fpr["micro"], tpr["micro"])
+
+    plt.figure()
+    plt.plot(fpr["micro"], tpr["micro"],
+             label='micro-average ROC curve (area = {0:0.2f})'
+             ''.format(roc_auc["micro"]))
+    for i in range(nclasses):
+        plt.plot(fpr[i], tpr[i], label='ROC curve of class {0} (area = {1:0.2f})'
+                 ''.format(i, roc_auc[i]))
+
+        plt.plot([0, 1], [0, 1], 'k--')
+        plt.xlim([0.0, 1.0])
+        plt.ylim([0.0, 1.05])
+        plt.xlabel('False Positive Rate')
+        plt.ylabel('True Positive Rate')
+        plt.title('Some extension of Receiver operating characteristic to multi-class')
+        plt.legend(loc="lower right")
+        plt.show()
+    
+    plt.savefig('tmp/roc')
+
+
+def report(predprobfilename):
+    predprob = np.load(predprobfilename)
+    print(predprob)
+    
 if __name__ == '__main__':
     os.chdir(os.path.dirname(__file__))
     
-    cmfilename = '../data/svm_rbf_cm.npy'
-    crfilename = '../data/svm_cr.npy'
+    cmfilename = '../data/cm_rbf.npy'
+    crfilename = '../data/cr_rbf.npy'
     cm = np.load(cmfilename)
     cr = np.load(crfilename)
     print(cr)
-    print(dir(cr))
 
+    # modelfilename = '../data/models/cat_model.pkl'
+    # clf = joblib.load(modelfilename)
+    # print(clf.best_estimator_)
+
+    predprobfilename = '../data/predprob.npy'
+    report(predprobfilename)
+    
     norm = []
     for i in cm:
         a = 0
@@ -51,7 +77,6 @@ if __name__ == '__main__':
         norm.append(tmp)
     
     fig = plt.figure(figsize=(6,4))
-    print(fig)
     plt.clf()
     ax = fig.add_subplot(111)
     ax.set_aspect(1)
@@ -66,15 +91,13 @@ if __name__ == '__main__':
                         horizontalalignment='center',
                         verticalalignment='center')
 
-    # show confusion matrix
-    #plt.title('cat classification (linear)')
-    plt.title('cat classification (rbf)')
+    plt.title('cat classification')
     plt.colorbar(res)
     labels = ['Abyssinian', 'Bengal', 'Birman', 'Bombay', 'British_Shorthair', 'Egyptian_Mau', 'Maine_Coon', 'Persian', 'Ragdoll', 'Russian_Blue', 'Siamese', 'Sphynx']
     #plt.xticks(range(width), labels[:width], fontsize=10)
     plt.yticks(range(height), labels[:height], fontsize=10)
     plt.tick_params(labelbottom="off")
     plt.show()
-    resultfile = '../tmp/cm.png'
+    resultfile = './tmp/cm.png'
     plt.savefig(resultfile)
     print('save ok: %s' % (resultfile,))

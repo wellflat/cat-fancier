@@ -1,10 +1,11 @@
 #!/usr/local/bin/python
 # -*- coding: utf-8 -*-
 
+import os
 import caffe
+import numpy as np
 import matplotlib.pyplot as plt
 from pprint import pprint
-import numpy as np
 
 def classify(modelfilename, pretrainedname, meanfilename,
              imagefilename, labelfilename, dstdir):
@@ -68,7 +69,14 @@ def vis_square(data, padsize=1, padval=0):
     plt.imshow(data)
 
 
+def predprobreport(predprobfilename):
+    predprob = np.load(predprobfilename)
+    print(len(predprob[0]))
+
+    
 if __name__ == '__main__':
+    os.chdir(os.path.dirname(__file__))
+    
     MODEL_FILE = '../data/imagenet_feature.prototxt'
     PRETRAINED = '../data/caffe_reference_imagenet_model'
     IMAGE_FILE = '../../cat_images/Abyssinian_2.jpg'
@@ -76,4 +84,6 @@ if __name__ == '__main__':
     LABEL_FILE = '../data/synset_words.txt'
     MEAN_FILE = '../data/ilsvrc_2012_mean.npy'
     DST_DIR = '/var/www/html/tmp/'
-    classify(MODEL_FILE, PRETRAINED, MEAN_FILE, IMAGE_FILE, LABEL_FILE, DST_DIR)
+    PRED_PROB = '../data/predprob.npy'
+    #classify(MODEL_FILE, PRETRAINED, MEAN_FILE, IMAGE_FILE, LABEL_FILE, DST_DIR)
+    predprobreport(PRED_PROB)

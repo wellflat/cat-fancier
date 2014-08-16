@@ -10,9 +10,10 @@ from sklearn.datasets import load_svmlight_file
 from sklearn.svm import SVC, LinearSVC
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.cross_validation import train_test_split, cross_val_score
+from sklearn.cross_validation import train_test_split
 from sklearn.grid_search import GridSearchCV
-from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
+from sklearn.metrics import accuracy_score, confusion_matrix, classification_report, roc_curve, auc
+from sklearn.preprocessing import label_binarize
 from sklearn.externals import joblib
 import matplotlib.pyplot as plt
 
@@ -46,23 +47,26 @@ def train(traindata, trainlabel, testdata, testlabel, labels,
     clf = None
     print('---------- Start training. ----------')
     if modeltype == 'lr':    ## Logistic Regression
+        print('# Logistic Regression model')
         #tuned_params = [{'C':np.logspace(-5, -4, 5),},]
-        tuned_params = [{'C':[0.0001,0.0002,0.0003,0.0004,0.0005],},]
+        tuned_params = [{'C':[0.0001,0.0002,0.0003,0.0004,0.0005,0.0006,0.0007,0.0008,0.0009,0.001],},]
         model = LogisticRegression()
     elif modeltype == 'rbf': ## SVM RBF kernel
+        print('# SVM (RBF kernel) model')
         tuned_params = [{'kernel':['rbf'], 'C':np.logspace(0, 2, 10),
                          'gamma':np.logspace(-5, -3, 10)},]
         model = SVC(probability=False)
     elif modeltype == 'rf':  ## Random Forest
-        tuned_params = [{'n_estimators': range(10,150,10),
+        print('# Random Forest model')
+        tuned_params = [{'n_estimators': range(100, 200, 10),
                          'max_features': ['auto', 'log2']}]  ## auto == sqrt
-        model = RandomForestClassifier()
+        model = RandomForestClassifier(oob_score=True, n_jobs=jobs)
     else:
         print('model type: [lr|rbf|rf]')
         sys.exit(-1)
         
-    print('number of folds: %s' % (cv,))
-    print('params grid: %s' % (tuned_params,))
+    print('# number of folds: %s' % (cv,))
+    print('# params grid: %s' % (tuned_params,))
 
     print("# Tuning hyper-parameters for accuracy\n")
 
@@ -84,7 +88,8 @@ def train(traindata, trainlabel, testdata, testlabel, labels,
     print('---------- Finish training. ----------')
     return clf
 
-def report(clf, testdata, testlabel, traindata_all, trainlabel_all, labels, modeltype):
+def report(clf, testdata, testlabel, traindata_all, trainlabel_all, labels,
+           reportdir, modeltype, istrain=False):
     print('# ----- Classification report -----')
     if hasattr(clf, 'best_estimator_'):
         print('## --- best estimator:')
@@ -93,26 +98,22 @@ def report(clf, testdata, testlabel, traindata_all, trainlabel_all, labels, mode
         print('## --- estimator:')
         print(clf)
 
-    # testdata = traindata_all
-    # testlabel = trainlabel_all
-
     print('## test data shape: %s' % (testdata.shape,))
     predlabel = clf.predict(testdata)
     
-    # predprob = clf.predict_proba(testdata)
-    # print(predprob[0])
-    # print(predprob[0][np.argmax(predprob[0])])
-
     print('## accuracy: %s' % (accuracy_score(testlabel, predlabel),))  ## == clf.score
     cm = confusion_matrix(testlabel, predlabel)
     print('## confusion matrix')
     print(cm)
-    np.save('svm_cm_' + modeltype, cm)
     cr = classification_report(testlabel, predlabel, target_names=labels)
     print(cr)
-    np.save('svm_cr_' + modeltype, cr)
 
-    
+    if istrain:
+        print('save report files')
+        np.save(reportdir + 'cm_' + modeltype, cm)
+        np.save(reportdir + 'cr_' + modeltype, cr)
+
+
 if __name__ == '__main__':
     os.chdir(os.path.dirname(__file__))
     args = parsearguments()
@@ -123,11 +124,10 @@ if __name__ == '__main__':
     LABELNAME_FILE = '../data/cat_label.tsv'
     TRAINDATA_OBJFILE = '../data/train_data.pkl'
     TRAINLABEL_OBJFILE = '../data/train_labels.pkl'
-    #MODEL_FILE = '../data/models/cat_model.pkl'
-    #MODEL_FILE = '../data/models/cat_model_linear.pkl'
-    #MODEL_FILE = '../data/models/cat_model_test.pkl'
-    #MODEL_FILE = '../data/models/cat_model_lr.pkl'
-    MODEL_FILE = '../data/models/cat_model_rf.pkl'
+    #MODEL_FILE = '../data/models/cat_model.pkl'  ## SVM rbf
+    MODEL_FILE = '../data/models/cat_model_lr.pkl'
+    #MODEL_FILE = '../data/models/cat_model_rf.pkl'
+    REPORT_DIR = '../data/'
 
     labels = getlabels(LABELNAME_FILE)
     print('# ----- Target labels -----')
@@ -157,4 +157,6 @@ if __name__ == '__main__':
         clf = joblib.load(MODEL_FILE)
         print('load model: %s' % (MODEL_FILE,))
 
-    report(clf, testdata, testlabel, traindata_all, trainlabel_all, labels, args.modeltype)
+    # report(clf, testdata, testlabel, traindata_all, trainlabel_all, labels,
+    #        REPORT_DIR, args.modeltype, args.istrain)
+    report2(clf, traindata_all, trainlabel_all, labels)
