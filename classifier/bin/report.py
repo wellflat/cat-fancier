@@ -2,17 +2,23 @@
 # -*- coding: utf-8 -*-
 
 import os
+from sklearn.cross_validation import train_test_split
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score, confusion_matrix, classification_report, roc_curve, auc
+from sklearn.preprocessing import label_binarize
 from sklearn.externals import joblib
 import matplotlib.pyplot as plt
 import numpy as np
 
-def reportroc(clf, testdata, testlabel, labels):
+def reportroc(traindata, trainlabel, testdata, testlabel, labels):
+    print('## train data shape: %s' % (traindata.shape,))
+    clf = LogisticRegression(C=0.0005)
+    clf.fit(traindata, trainlabel)
     print('## test data shape: %s' % (testdata.shape,))
     predlabel = clf.predict(testdata)
     predprob = clf.predict_proba(testdata)
-    # print(predprob[0])
-    # print(predprob[0][np.argmax(predprob[0])])
     print(confusion_matrix(testlabel, predlabel))
+    print(classification_report(testlabel, predlabel, target_names=labels))
 
     testlabel = label_binarize(testlabel, classes=range(1,13))
     predlabel = label_binarize(predlabel, classes=range(1,13))
@@ -21,10 +27,10 @@ def reportroc(clf, testdata, testlabel, labels):
     tpr = dict()
     roc_auc = dict()
     for i in xrange(nclasses):
-        fpr[i], tpr[i], _ = roc_curve(testlabel[:,i], predlabel[:,i])
+        fpr[i], tpr[i], _ = roc_curve(testlabel[:,i], predprob[:,i])
         roc_auc[i] = auc(fpr[i], tpr[i])
 
-    fpr["micro"], tpr["micro"], _ = roc_curve(testlabel.ravel(), predlabel.ravel())
+    fpr["micro"], tpr["micro"], _ = roc_curve(testlabel.ravel(), predprob.ravel())
     roc_auc["micro"] = auc(fpr["micro"], tpr["micro"])
 
     plt.figure()
@@ -32,41 +38,22 @@ def reportroc(clf, testdata, testlabel, labels):
              label='micro-average ROC curve (area = {0:0.2f})'
              ''.format(roc_auc["micro"]))
     for i in range(nclasses):
-        plt.plot(fpr[i], tpr[i], label='ROC curve of class {0} (area = {1:0.2f})'
-                 ''.format(i, roc_auc[i]))
+        plt.plot(fpr[i], tpr[i], label='{0} (area = {1:0.2f})'
+                 ''.format(labels[i], roc_auc[i]))
 
         plt.plot([0, 1], [0, 1], 'k--')
         plt.xlim([0.0, 1.0])
         plt.ylim([0.0, 1.05])
         plt.xlabel('False Positive Rate')
         plt.ylabel('True Positive Rate')
-        plt.title('Some extension of Receiver operating characteristic to multi-class')
+        plt.title('Receiver operating characteristic to multi-class')
         plt.legend(loc="lower right")
         plt.show()
     
     plt.savefig('tmp/roc')
 
 
-def report(predprobfilename):
-    predprob = np.load(predprobfilename)
-    print(predprob)
-    
-if __name__ == '__main__':
-    os.chdir(os.path.dirname(__file__))
-    
-    cmfilename = '../data/cm_rbf.npy'
-    crfilename = '../data/cr_rbf.npy'
-    cm = np.load(cmfilename)
-    cr = np.load(crfilename)
-    print(cr)
-
-    # modelfilename = '../data/models/cat_model.pkl'
-    # clf = joblib.load(modelfilename)
-    # print(clf.best_estimator_)
-
-    predprobfilename = '../data/predprob.npy'
-    report(predprobfilename)
-    
+def createconfusionmatrix(cm, labels):
     norm = []
     for i in cm:
         a = 0
@@ -93,7 +80,7 @@ if __name__ == '__main__':
 
     plt.title('cat classification')
     plt.colorbar(res)
-    labels = ['Abyssinian', 'Bengal', 'Birman', 'Bombay', 'British_Shorthair', 'Egyptian_Mau', 'Maine_Coon', 'Persian', 'Ragdoll', 'Russian_Blue', 'Siamese', 'Sphynx']
+    
     #plt.xticks(range(width), labels[:width], fontsize=10)
     plt.yticks(range(height), labels[:height], fontsize=10)
     plt.tick_params(labelbottom="off")
@@ -101,3 +88,46 @@ if __name__ == '__main__':
     resultfile = './tmp/cm.png'
     plt.savefig(resultfile)
     print('save ok: %s' % (resultfile,))
+    
+    
+def report(clf, testdata, testlabel, traindata_all, trainlabel_all, labels):
+    print('# ----- Classification report -----')
+    if hasattr(clf, 'best_estimator_'):
+        print('## --- best estimator:')
+        print(clf.best_estimator_)
+    else:
+        print('## --- estimator:')
+        print(clf)
+
+    print('## test data shape: %s' % (testdata.shape,))
+    predlabel = clf.predict(testdata)
+    
+    print('## accuracy: %s' % (accuracy_score(testlabel, predlabel),))  ## == clf.score
+    cm = confusion_matrix(testlabel, predlabel)
+    print('## confusion matrix')
+    print(cm)
+    cr = classification_report(testlabel, predlabel, target_names=labels)
+    print(cr)
+
+    
+if __name__ == '__main__':
+    os.chdir(os.path.dirname(__file__))
+    
+    # cmfilename = '../data/cm_rbf.npy'
+    # crfilename = '../data/cr_rbf.npy'
+    # cm = np.load(cmfilename)
+    # cr = np.load(crfilename)
+    # print(cr)
+
+    labels = ['Abyssinian', 'Bengal', 'Birman', 'Bombay', 'British_Shorthair', 'Egyptian_Mau', 'Maine_Coon', 'Persian', 'Ragdoll', 'Russian_Blue', 'Siamese', 'Sphynx']
+    #createconfusionmatrix(cm, labels)
+
+    clf = joblib.load('../data/models/cat_model_lr.pkl')
+    traindata_all = joblib.load('../data/train_data.pkl')
+    trainlabel_all = joblib.load('../data/train_labels.pkl')
+    traindata, testdata, trainlabel, testlabel = train_test_split(traindata_all, trainlabel_all)
+
+    #report(clf, testdata, testlabel, traindata_all, trainlabel_all, labels)
+    reportroc(traindata, trainlabel, testdata, testlabel, labels)
+
+    

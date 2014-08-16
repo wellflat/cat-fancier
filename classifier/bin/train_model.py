@@ -12,8 +12,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.cross_validation import train_test_split
 from sklearn.grid_search import GridSearchCV
-from sklearn.metrics import accuracy_score, confusion_matrix, classification_report, roc_curve, auc
-from sklearn.preprocessing import label_binarize
+from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
 from sklearn.externals import joblib
 import matplotlib.pyplot as plt
 
