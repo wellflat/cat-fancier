@@ -9,6 +9,7 @@ import numpy as np
 from sklearn.datasets import load_svmlight_file
 from sklearn.svm import SVC, LinearSVC
 from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.cross_validation import train_test_split, cross_val_score
 from sklearn.grid_search import GridSearchCV
 from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
@@ -20,6 +21,8 @@ def parsearguments():
     parser = argparse.ArgumentParser(description='train classfication model')
     parser.add_argument('-t', '--train', help='train model',
                         action='store_true', dest='istrain', default=False)
+    parser.add_argument('-m', '--model', help='model type (default lr)',
+                        type=str, dest='modeltype', default='lr')
     parser.add_argument('-c', '--cv', help='number of folds (default 5)',
                         type=int, dest='cv', default=5)
     parser.add_argument('-d', '--dump', help='dump data/label pkl files',
@@ -42,14 +45,21 @@ def train(traindata, trainlabel, testdata, testlabel, labels,
           modeltype='lr', cv=5, jobs=-1):
     clf = None
     print('---------- Start training. ----------')
-    if modeltype == 'lr':
+    if modeltype == 'lr':    ## Logistic Regression
         #tuned_params = [{'C':np.logspace(-5, -4, 5),},]
         tuned_params = [{'C':[0.0001,0.0002,0.0003,0.0004,0.0005],},]
         model = LogisticRegression()
-    elif modeltype == 'rbf':
+    elif modeltype == 'rbf': ## SVM RBF kernel
         tuned_params = [{'kernel':['rbf'], 'C':np.logspace(0, 2, 10),
                          'gamma':np.logspace(-5, -3, 10)},]
         model = SVC(probability=False)
+    elif modeltype == 'rf':  ## Random Forest
+        tuned_params = [{'n_estimators': range(10,150,10),
+                         'max_features': ['auto', 'log2']}]  ## auto == sqrt
+        model = RandomForestClassifier()
+    else:
+        print('model type: [lr|rbf|rf]')
+        sys.exit(-1)
         
     print('number of folds: %s' % (cv,))
     print('params grid: %s' % (tuned_params,))
@@ -74,7 +84,7 @@ def train(traindata, trainlabel, testdata, testlabel, labels,
     print('---------- Finish training. ----------')
     return clf
 
-def report(clf, testdata, testlabel, traindata_all, trainlabel_all, labels):
+def report(clf, testdata, testlabel, traindata_all, trainlabel_all, labels, modeltype):
     print('# ----- Classification report -----')
     if hasattr(clf, 'best_estimator_'):
         print('## --- best estimator:')
@@ -97,10 +107,10 @@ def report(clf, testdata, testlabel, traindata_all, trainlabel_all, labels):
     cm = confusion_matrix(testlabel, predlabel)
     print('## confusion matrix')
     print(cm)
-    np.save('svm_cm', cm)
+    np.save('svm_cm_' + modeltype, cm)
     cr = classification_report(testlabel, predlabel, target_names=labels)
     print(cr)
-    np.save('svm_cr', cr)
+    np.save('svm_cr_' + modeltype, cr)
 
     
 if __name__ == '__main__':
@@ -116,8 +126,8 @@ if __name__ == '__main__':
     #MODEL_FILE = '../data/models/cat_model.pkl'
     #MODEL_FILE = '../data/models/cat_model_linear.pkl'
     #MODEL_FILE = '../data/models/cat_model_test.pkl'
-    MODEL_FILE = '../data/models/cat_model_lr.pkl'
-    #MODEL_FILE = '../data/models/cat_model_report.pkl'
+    #MODEL_FILE = '../data/models/cat_model_lr.pkl'
+    MODEL_FILE = '../data/models/cat_model_rf.pkl'
 
     labels = getlabels(LABELNAME_FILE)
     print('# ----- Target labels -----')
@@ -140,11 +150,11 @@ if __name__ == '__main__':
     traindata, testdata, trainlabel, testlabel = train_test_split(traindata_all, trainlabel_all)
     
     if args.istrain:
-        clf = train(traindata, trainlabel, testdata, testlabel, labels, 'lr', args.cv)
+        clf = train(traindata, trainlabel, testdata, testlabel, labels, args.modeltype, args.cv)
         joblib.dump(clf, MODEL_FILE)
         print('dump model: %s' % (MODEL_FILE,))
     else:
         clf = joblib.load(MODEL_FILE)
         print('load model: %s' % (MODEL_FILE,))
 
-    report(clf, testdata, testlabel, traindata_all, trainlabel_all, labels)
+    report(clf, testdata, testlabel, traindata_all, trainlabel_all, labels, args.modeltype)

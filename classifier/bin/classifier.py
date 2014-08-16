@@ -13,7 +13,7 @@ def classify(imagelist, labels, protofilename, pretrainedname,
              meanfilename, modelfilename):
     mean = np.load(meanfilename)
     net = caffe.Classifier(protofilename, pretrainedname, mean=mean,
-                           channel_swap=(2,1,0), input_dims=(256,256), raw_scale=255)
+                           channel_swap=(2,1,0), image_dims=(256,256), raw_scale=255)
     print('# ----- Target labels -----')
     print(labels)
     
@@ -58,7 +58,7 @@ if __name__ == '__main__':
     PROTO_FILE = '../data/imagenet_feature.prototxt'
     PRETRAINED = '../data/caffe_reference_imagenet_model'
     MEAN_FILE = '../data/ilsvrc_2012_mean.npy'
-    MODEL_FILE = '../data/models/cat_model.pkl'
+    MODEL_FILE = '../data/models/cat_model_lr.pkl'
     imagelist = createimagelist(IMAGE_DIR)
     labels = getlabels(LABEL_FILE)
     
