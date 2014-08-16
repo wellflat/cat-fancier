@@ -3,6 +3,7 @@
 
 import os
 from sklearn.cross_validation import train_test_split
+from sklearn.svm import SVC
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, confusion_matrix, classification_report, roc_curve, auc
 from sklearn.preprocessing import label_binarize
@@ -10,7 +11,7 @@ from sklearn.externals import joblib
 import matplotlib.pyplot as plt
 import numpy as np
 
-def reportroc(traindata, trainlabel, testdata, testlabel, labels):
+def plotroc(traindata, trainlabel, testdata, testlabel, labels):
     print('## train data shape: %s' % (traindata.shape,))
     clf = LogisticRegression(C=0.0005)
     clf.fit(traindata, trainlabel)
@@ -46,14 +47,14 @@ def reportroc(traindata, trainlabel, testdata, testlabel, labels):
         plt.ylim([0.0, 1.05])
         plt.xlabel('False Positive Rate')
         plt.ylabel('True Positive Rate')
-        plt.title('Receiver operating characteristic to multi-class')
+        plt.title('Receiver operating characteristic')
         plt.legend(loc="lower right")
         plt.show()
     
     plt.savefig('tmp/roc')
 
 
-def createconfusionmatrix(cm, labels):
+def plotconfusionmatrix(cm, labels):
     norm = []
     for i in cm:
         a = 0
@@ -106,6 +107,7 @@ def report(clf, testdata, testlabel, traindata_all, trainlabel_all, labels):
     cm = confusion_matrix(testlabel, predlabel)
     print('## confusion matrix')
     print(cm)
+    plotconfusionmatrix(cm, labels)
     cr = classification_report(testlabel, predlabel, target_names=labels)
     print(cr)
 
@@ -113,21 +115,25 @@ def report(clf, testdata, testlabel, traindata_all, trainlabel_all, labels):
 if __name__ == '__main__':
     os.chdir(os.path.dirname(__file__))
     
-    # cmfilename = '../data/cm_rbf.npy'
+    # cmfilename = '../data/cm_lr.npy'
     # crfilename = '../data/cr_rbf.npy'
     # cm = np.load(cmfilename)
     # cr = np.load(crfilename)
     # print(cr)
 
-    labels = ['Abyssinian', 'Bengal', 'Birman', 'Bombay', 'British_Shorthair', 'Egyptian_Mau', 'Maine_Coon', 'Persian', 'Ragdoll', 'Russian_Blue', 'Siamese', 'Sphynx']
-    #createconfusionmatrix(cm, labels)
+    labels = ['Abyssinian', 'Bengal', 'Birman', 'Bombay', 'British_Shorthair', 'Egyptian_Mau',
+              'Maine_Coon', 'Persian', 'Ragdoll', 'Russian_Blue', 'Siamese', 'Sphynx']
 
-    clf = joblib.load('../data/models/cat_model_lr.pkl')
+    #clf = joblib.load('../data/models/cat_model_lr.pkl')
     traindata_all = joblib.load('../data/train_data.pkl')
     trainlabel_all = joblib.load('../data/train_labels.pkl')
     traindata, testdata, trainlabel, testlabel = train_test_split(traindata_all, trainlabel_all)
 
-    #report(clf, testdata, testlabel, traindata_all, trainlabel_all, labels)
-    reportroc(traindata, trainlabel, testdata, testlabel, labels)
+    clf = LogisticRegression(C=0.0005)
+    # clf = SVC(C=7.7426368268112693, gamma=7.7426368268112782e-05, probability=True)
+    clf.fit(traindata, trainlabel)
+    
+    report(clf, testdata, testlabel, traindata_all, trainlabel_all, labels)
+    #plotroc(traindata, trainlabel, testdata, testlabel, labels)
 
     

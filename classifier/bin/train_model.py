@@ -156,6 +156,5 @@ if __name__ == '__main__':
         clf = joblib.load(MODEL_FILE)
         print('load model: %s' % (MODEL_FILE,))
 
-    # report(clf, testdata, testlabel, traindata_all, trainlabel_all, labels,
-    #        REPORT_DIR, args.modeltype, args.istrain)
-    report2(clf, traindata_all, trainlabel_all, labels)
+    report(clf, testdata, testlabel, traindata_all, trainlabel_all, labels,
+           REPORT_DIR, args.modeltype, args.istrain)
