@@ -4,6 +4,7 @@
 import os
 from sklearn.cross_validation import train_test_split
 from sklearn.svm import SVC
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, confusion_matrix, classification_report, roc_curve, auc
 from sklearn.preprocessing import label_binarize
@@ -12,13 +13,17 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 def plotroc(traindata, trainlabel, testdata, testlabel, labels):
+    print('# plot ROC curve')
     print('## train data shape: %s' % (traindata.shape,))
-    clf = LogisticRegression(C=0.0005)
+    #clf = LogisticRegression(C=0.0005)
+    clf = RandomForestClassifier(10, oob_score=True, n_jobs=-1)
     clf.fit(traindata, trainlabel)
     print('## test data shape: %s' % (testdata.shape,))
     predlabel = clf.predict(testdata)
     predprob = clf.predict_proba(testdata)
-    print(confusion_matrix(testlabel, predlabel))
+    cm = confusion_matrix(testlabel, predlabel)
+    print(cm)
+    plotconfusionmatrix(cm, labels)
     print(classification_report(testlabel, predlabel, target_names=labels))
 
     testlabel = label_binarize(testlabel, classes=range(1,13))
@@ -26,21 +31,20 @@ def plotroc(traindata, trainlabel, testdata, testlabel, labels):
     nclasses = predlabel.shape[1]
     fpr = dict()
     tpr = dict()
-    roc_auc = dict()
+    rocauc = dict()
     for i in xrange(nclasses):
         fpr[i], tpr[i], _ = roc_curve(testlabel[:,i], predprob[:,i])
-        roc_auc[i] = auc(fpr[i], tpr[i])
+        rocauc[i] = auc(fpr[i], tpr[i])
 
     fpr["micro"], tpr["micro"], _ = roc_curve(testlabel.ravel(), predprob.ravel())
-    roc_auc["micro"] = auc(fpr["micro"], tpr["micro"])
+    rocauc["micro"] = auc(fpr["micro"], tpr["micro"])
 
     plt.figure()
     plt.plot(fpr["micro"], tpr["micro"],
-             label='micro-average ROC curve (area = {0:0.2f})'
-             ''.format(roc_auc["micro"]))
+             label='micro-average ROC curve (area = {0:0.2f})'''.format(rocauc["micro"]))
     for i in range(nclasses):
         plt.plot(fpr[i], tpr[i], label='{0} (area = {1:0.2f})'
-                 ''.format(labels[i], roc_auc[i]))
+                 ''.format(labels[i], rocauc[i]))
 
         plt.plot([0, 1], [0, 1], 'k--')
         plt.xlim([0.0, 1.0])
@@ -50,11 +54,13 @@ def plotroc(traindata, trainlabel, testdata, testlabel, labels):
         plt.title('Receiver operating characteristic')
         plt.legend(loc="lower right")
         plt.show()
+
     
     plt.savefig('tmp/roc')
 
 
 def plotconfusionmatrix(cm, labels):
+    print('# plot confusion matrix')
     norm = []
     for i in cm:
         a = 0
@@ -131,9 +137,9 @@ if __name__ == '__main__':
 
     clf = LogisticRegression(C=0.0005)
     # clf = SVC(C=7.7426368268112693, gamma=7.7426368268112782e-05, probability=True)
-    clf.fit(traindata, trainlabel)
+    #clf.fit(traindata, trainlabel)
     
-    report(clf, testdata, testlabel, traindata_all, trainlabel_all, labels)
-    #plotroc(traindata, trainlabel, testdata, testlabel, labels)
+    #report(clf, testdata, testlabel, traindata_all, trainlabel_all, labels)
+    plotroc(traindata, trainlabel, testdata, testlabel, labels)
 
     
