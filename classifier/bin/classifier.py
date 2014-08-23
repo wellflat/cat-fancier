@@ -20,7 +20,7 @@ def classify(imagelist, labels, protofilename, pretrainedname,
     estimator = joblib.load(modelfilename)
     clf = estimator.best_estimator_
     print(clf)
-
+    features = []
     for imagefilename in imagelist:
         image = caffe.io.load_image(imagefilename)
         oversampled = caffe.io.oversample([caffe.io.resize_image(image, net.image_dims)],
@@ -30,17 +30,24 @@ def classify(imagelist, labels, protofilename, pretrainedname,
         feature = net.blobs['fc6i'].data[4]
         flattenfeature = feature.flatten().tolist()
         scaledfeature = preprocessing.scale(flattenfeature)
+        features.append(scaledfeature)
+
+    predlabels = clf.predict(features)
+    predprobas = clf.predict_proba(features)
+    print(predprobas)
+    topk = predprobas.argsort()[0][-1:-6:-1]
+    pred = zip(labels[topk], predprobas[0][topk])
+    print(pred)
+
     
-        y = clf.predict(scaledfeature)
-        print(y)
-        print(labels[int(y)])
 
 def getlabels(labelfilename):
-    labels = [None]
+    #labels = [None]
+    labels = []
     reader = csv.reader(file(labelfilename, 'r'), delimiter='\t', lineterminator='\n')
     for line in reader:
         labels.append(line[0])
-    return labels
+    return np.array(labels)
     
 
 def createimagelist(imagedir):
@@ -52,7 +59,7 @@ def createimagelist(imagedir):
 if __name__ == '__main__':
     os.chdir(os.path.dirname(__file__))
     
-    IMAGE_FILE = '../data/test/cat/chocolat1.jpg'
+    IMAGE_FILE = '../data/cat_images/Bombay_6.jpg'
     IMAGE_DIR = '../../cat_test_images'
     LABEL_FILE = '../data/cat_label.tsv'
     PROTO_FILE = '../data/imagenet_feature.prototxt'
@@ -60,7 +67,7 @@ if __name__ == '__main__':
     MEAN_FILE = '../data/ilsvrc_2012_mean.npy'
     MODEL_FILE = '../data/models/cat_model_lr.pkl'
     imagelist = createimagelist(IMAGE_DIR)
+    imagelist = [IMAGE_FILE]
     labels = getlabels(LABEL_FILE)
-    
     
     classify(imagelist, labels, PROTO_FILE, PRETRAINED, MEAN_FILE, MODEL_FILE)

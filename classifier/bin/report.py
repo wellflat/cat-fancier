@@ -1,7 +1,9 @@
 #!/usr/local/bin/python
 # -*- coding: utf-8 -*-
 
+import csv
 import os
+import numpy as np
 from sklearn.cross_validation import train_test_split
 from sklearn.svm import SVC
 from sklearn.ensemble import RandomForestClassifier
@@ -10,9 +12,9 @@ from sklearn.metrics import accuracy_score, confusion_matrix, classification_rep
 from sklearn.preprocessing import label_binarize
 from sklearn.externals import joblib
 import matplotlib.pyplot as plt
-import numpy as np
 
-def plotroc(traindata, trainlabel, testdata, testlabel, labels):
+
+def plotroc(traindata, trainlabel, testdata, testlabel, labels, rocfilename, cmfilename):
     print('# plot ROC curve')
     print('## train data shape: %s' % (traindata.shape,))
     #clf = LogisticRegression(C=0.0005)
@@ -23,7 +25,7 @@ def plotroc(traindata, trainlabel, testdata, testlabel, labels):
     predprob = clf.predict_proba(testdata)
     cm = confusion_matrix(testlabel, predlabel)
     print(cm)
-    plotconfusionmatrix(cm, labels)
+    plotconfusionmatrix(cm, labels, cmfilename)
     print(classification_report(testlabel, predlabel, target_names=labels))
 
     testlabel = label_binarize(testlabel, classes=range(1,13))
@@ -56,10 +58,10 @@ def plotroc(traindata, trainlabel, testdata, testlabel, labels):
         plt.show()
 
     
-    plt.savefig('tmp/roc')
+    plt.savefig(rocfilename)
 
 
-def plotconfusionmatrix(cm, labels):
+def plotconfusionmatrix(cm, labels, cmfilename):
     print('# plot confusion matrix')
     norm = []
     for i in cm:
@@ -92,12 +94,12 @@ def plotconfusionmatrix(cm, labels):
     plt.yticks(range(height), labels[:height], fontsize=10)
     plt.tick_params(labelbottom="off")
     plt.show()
-    resultfile = './tmp/cm.png'
-    plt.savefig(resultfile)
-    print('save ok: %s' % (resultfile,))
+    
+    plt.savefig(cmfilename)
+    print('save ok: %s' % (cmfilename,))
     
     
-def report(clf, testdata, testlabel, traindata_all, trainlabel_all, labels):
+def report(clf, testdata, testlabel, traindata_all, trainlabel_all, labels, cmfilename):
     print('# ----- Classification report -----')
     if hasattr(clf, 'best_estimator_'):
         print('## --- best estimator:')
@@ -113,33 +115,38 @@ def report(clf, testdata, testlabel, traindata_all, trainlabel_all, labels):
     cm = confusion_matrix(testlabel, predlabel)
     print('## confusion matrix')
     print(cm)
-    plotconfusionmatrix(cm, labels)
+    plotconfusionmatrix(cm, labels, cmfilename)
     cr = classification_report(testlabel, predlabel, target_names=labels)
     print(cr)
+
+def getlabels(labelfilename):
+    labels = []
+    reader = csv.reader(file(labelfilename, 'r'), delimiter='\t', lineterminator='\n')
+    for line in reader:
+        labels.append(line[0])
+    return labels
 
     
 if __name__ == '__main__':
     os.chdir(os.path.dirname(__file__))
     
-    # cmfilename = '../data/cm_lr.npy'
-    # crfilename = '../data/cr_rbf.npy'
-    # cm = np.load(cmfilename)
-    # cr = np.load(crfilename)
-    # print(cr)
+    LABELNAME_FILE = '../data/cat_label.tsv'
+    TRAINDATA_OBJFILE = '../data/train_data.pkl'
+    TRAINLABEL_OBJFILE = '../data/train_labels.pkl'
+    MODEL_FILE = '../data/models/cat_model_lr.pkl'
+    CM_FILE = './tmp/cm.png'
+    ROC_FILE = './tmp/roc'
+    
+    labels = getlabels(LABELNAME_FILE)
+    print('# ----- Target labels -----')
+    print(labels)
 
-    labels = ['Abyssinian', 'Bengal', 'Birman', 'Bombay', 'British_Shorthair', 'Egyptian_Mau',
-              'Maine_Coon', 'Persian', 'Ragdoll', 'Russian_Blue', 'Siamese', 'Sphynx']
-
-    #clf = joblib.load('../data/models/cat_model_lr.pkl')
-    traindata_all = joblib.load('../data/train_data.pkl')
-    trainlabel_all = joblib.load('../data/train_labels.pkl')
+    clf = joblib.load(MODEL_FILE)
+    traindata_all = joblib.load(TRAINDATA_OBJFILE)
+    trainlabel_all = joblib.load(TRAINLABEL_OBJFILE)
     traindata, testdata, trainlabel, testlabel = train_test_split(traindata_all, trainlabel_all)
 
-    clf = LogisticRegression(C=0.0005)
-    # clf = SVC(C=7.7426368268112693, gamma=7.7426368268112782e-05, probability=True)
-    #clf.fit(traindata, trainlabel)
-    
-    #report(clf, testdata, testlabel, traindata_all, trainlabel_all, labels)
-    plotroc(traindata, trainlabel, testdata, testlabel, labels)
+    #report(clf, testdata, testlabel, traindata_all, trainlabel_all, labels, CM_FILE)
+    plotroc(traindata, trainlabel, testdata, testlabel, labels, ROC_FILE, CM_FILE)
 
     

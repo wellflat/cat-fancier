@@ -47,12 +47,11 @@ def train(traindata, trainlabel, testdata, testlabel, labels,
     print('---------- Start training. ----------')
     if modeltype == 'lr':    ## Logistic Regression
         print('# Logistic Regression model')
-        #tuned_params = [{'C':np.logspace(-5, -4, 5),},]
-        tuned_params = [{'C':[0.0001,0.0002,0.0003,0.0004,0.0005,0.0006,0.0007,0.0008,0.0009,0.001],},]
+        tuned_params = [{'C':np.logspace(-5, -4, 20),},]
         model = LogisticRegression()
     elif modeltype == 'rbf': ## SVM RBF kernel
         print('# SVM (RBF kernel) model')
-        tuned_params = [{'kernel':['rbf'], 'C':np.logspace(0, 2, 10),
+        tuned_params = [{'kernel':['rbf'], 'C':np.logspace(0, 2, 20),
                          'gamma':np.logspace(-5, -3, 10)},]
         model = SVC(probability=False)
     elif modeltype == 'rf':  ## Random Forest
@@ -108,7 +107,7 @@ def report(clf, testdata, testlabel, traindata_all, trainlabel_all, labels,
     print(cr)
 
     if istrain:
-        print('save report files')
+        print('save classification report files')
         np.save(reportdir + 'cm_' + modeltype, cm)
         np.save(reportdir + 'cr_' + modeltype, cr)
 
@@ -117,15 +116,15 @@ if __name__ == '__main__':
     os.chdir(os.path.dirname(__file__))
     args = parsearguments()
     
-    #FEATURE_FILE = '../data/cat_features.txt'  ## libsvm format text file
-    FEATURE_FILE = '../data/cat_features.npy'  ## numpy.ndarray object file
+    #FEATURE_FILE = '../data/cat_features.txt'   ## libsvm format text file
+    FEATURE_FILE = '../data/cat_features.npy'   ## numpy.ndarray object file
     LABEL_FILE = '../data/cat_train_labels.npy'
     LABELNAME_FILE = '../data/cat_label.tsv'
     TRAINDATA_OBJFILE = '../data/train_data.pkl'
     TRAINLABEL_OBJFILE = '../data/train_labels.pkl'
-    #MODEL_FILE = '../data/models/cat_model.pkl'  ## SVM rbf
-    MODEL_FILE = '../data/models/cat_model_lr.pkl'
-    #MODEL_FILE = '../data/models/cat_model_rf.pkl'
+    #MODEL_FILE = '../data/models/cat_model.pkl'     ## SVM-RBF
+    MODEL_FILE = '../data/models/cat_model_lr.pkl'  ## Logistic Regression
+    #MODEL_FILE = '../data/models/cat_model_rf.pkl'  ## Random Forest
     REPORT_DIR = '../data/'
 
     labels = getlabels(LABELNAME_FILE)
