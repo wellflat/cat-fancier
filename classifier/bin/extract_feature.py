@@ -66,8 +66,7 @@ if __name__ == '__main__':
     FEATURE_FILE = '../data/cat_features.txt'  ## libsvm format file
     FEATURE_FILE = '../data/cat_features.npy'
     LABEL_FILE = '../data/cat_train_labels.npy'
-    featurefile_ext = os.path.splitext(FEATURE_FILE)[-1]
-    if featurefile_ext == '.txt':
+    if os.path.splitext(FEATURE_FILE)[-1] == '.txt':
         libsvmformat = True
     else:
         libsvmformat = False
