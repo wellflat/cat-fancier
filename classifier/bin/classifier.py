@@ -64,7 +64,7 @@ def createimagelist(imagefileordir):
 if __name__ == '__main__':
     os.chdir(os.path.dirname(__file__))
     
-    IMAGE_FILE = '../data/cat_images/Abyssinian_100.jpg'
+    IMAGE_FILE = '../data/cat_images/Russian_Blue_212.jpg'
     IMAGE_DIR = '../../cat_test_images'
     LABEL_FILE = '../data/cat_label.tsv'
     PROTO_FILE = '../data/imagenet_feature.prototxt'
