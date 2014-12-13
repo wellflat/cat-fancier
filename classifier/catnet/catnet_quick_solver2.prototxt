@@ -1,6 +1,6 @@
 net: "catnet_train_val.prototxt"
 test_iter: 100
-test_interval: 100
+test_interval: 200
 base_lr: 0.001
 lr_policy: "step"
 gamma: 0.1

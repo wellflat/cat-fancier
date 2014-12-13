@@ -5,9 +5,12 @@ layers {
   top: "data"
   top: "label"
   data_param {
-    source: "catnet_train_leveldb"
+    source: "./catnet_train_lmdb"
+    backend: LMDB
+    batch_size: 50
+  }
+  transform_param {
     mean_file: "./data/catnet_mean.binaryproto"
-    batch_size: 256
     crop_size: 227
     mirror: true
   }
@@ -19,9 +22,12 @@ layers {
   top: "data"
   top: "label"
   data_param {
-    source: "catnet_val_leveldb"
-    mean_file: "./data/catnet_mean.binaryproto"
+    source: "./catnet_val_lmdb"
+    backend: LMDB
     batch_size: 50
+  }
+  transform_param {
+    mean_file: "./data/catnet_mean.binaryproto"
     crop_size: 227
     mirror: false
   }

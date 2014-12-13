@@ -49,8 +49,6 @@ def extractfeature(imagedir, labellistfilename, protofilename, pretrainedname,
 
     np.save(featurefilename, features)
     np.save(labelfilename, labels)
-    if featurefile_ext == '.txt':
-        featurefile.close()
 
     print('Finish extract features.')
     
@@ -61,7 +59,7 @@ if __name__ == '__main__':
     IMAGE_DIR = '../../cat_images'
     LABELLIST_FILE = '../data/cat_train_labels.tsv'
     PROTO_FILE = '../data/imagenet_feature.prototxt'
-    PRETRAINED_FILE = '../data/caffe_reference_imagenet_model'
+    PRETRAINED_FILE = '../data/bvlc_reference_caffenet.caffemodel'
     MEAN_FILE = '../data/ilsvrc_2012_mean.npy'
     FEATURE_FILE = '../data/cat_features.txt'  ## libsvm format file
     FEATURE_FILE = '../data/cat_features.npy'

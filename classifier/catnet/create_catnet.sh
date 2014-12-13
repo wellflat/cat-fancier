@@ -1,27 +1,42 @@
 #!/usr/bin/env sh
 # This script converts the cat data into leveldb format.
 
-TOOLS=../caffe/build/tools
+TOOLS=../../caffe/build/tools
+TRAINDB=catnet_train_lmdb
+TESTDB=catnet_val_lmdb
+MEANFILE=catnet_mean.binaryproto
 DATA=./data
 
-echo "Creating leveldb..."
+echo "Creating train/test databases ..."
 
-rm -rf catnet_train_leveldb
-rm -rf catnet_val_leveldb
+if [ -e $TRAINDB ];then
+  rm -rf $TRAINDB
+fi
+if [ -e $TESTDB ];then
+  rm -rf $TESTDB
+fi
+if [ -e $DATA/$MEANFILE ];then
+  rm $DATA/$MEANFILE
+fi
 
-RESIZE=true
-GLOG_logtostderr=1 $TOOLS/convert_imageset.bin \
+GLOG_logtostderr=1 $TOOLS/convert_imageset \
+    --resize_height=256 \
+    --resize_width=256 \
+    --shuffle \
     $DATA/ \
     $DATA/train.txt \
-    catnet_train_leveldb 1 leveldb 256 256
+    $TRAINDB
 
-GLOG_logtostderr=1 $TOOLS/convert_imageset.bin \
+GLOG_logtostderr=1 $TOOLS/convert_imageset \
+    --resize_height=256 \
+    --resize_width=256 \
+    --shuffle \
     $DATA/ \
     $DATA/val.txt \
-    catnet_val_leveldb 1 leveldb 256 256
+    $TESTDB
 
-echo "Computing image mean..."
+echo "Creating mean file ..."
 
-$TOOLS/compute_image_mean.bin ./catnet_train_leveldb $DATA/catnet_mean.binaryproto leveldb
+$TOOLS/compute_image_mean $TRAINDB $DATA/$MEANFILE
 
 echo "Done."
