@@ -2,7 +2,7 @@
 
 TOOLS=../../caffe/build/tools
 PRETRAINED=./data/bvlc_reference_caffenet.caffemodel
-SOLVER=catnet_quick_solver2.prototxt
+SOLVER=catnet_quick_solver.prototxt
 
 GLOG_logtostderr=1 $TOOLS/caffe train --solver=$SOLVER --weights=$PRETRAINED
 

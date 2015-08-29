@@ -6,6 +6,7 @@ TRAINDB=catnet_train_lmdb
 TESTDB=catnet_val_lmdb
 MEANFILE=catnet_mean.binaryproto
 DATA=./data
+SIZE=256
 
 echo "Creating train/test databases ..."
 
@@ -20,16 +21,16 @@ if [ -e $DATA/$MEANFILE ];then
 fi
 
 GLOG_logtostderr=1 $TOOLS/convert_imageset \
-    --resize_height=256 \
-    --resize_width=256 \
+    --resize_height=$SIZE \
+    --resize_width=$SIZE \
     --shuffle \
     $DATA/ \
     $DATA/train.txt \
     $TRAINDB
 
 GLOG_logtostderr=1 $TOOLS/convert_imageset \
-    --resize_height=256 \
-    --resize_width=256 \
+    --resize_height=$SIZE \
+    --resize_width=$SIZE \
     --shuffle \
     $DATA/ \
     $DATA/val.txt \
