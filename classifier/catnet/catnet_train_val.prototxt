@@ -24,7 +24,7 @@ layers {
   data_param {
     source: "catnet_val_lmdb"
     backend: LMDB
-    batch_size: 50
+    batch_size: 64
   }
   transform_param {
     crop_size: 227
