@@ -1,11 +1,12 @@
 #!/usr/bin/env sh
-# This script converts the cat data into leveldb format.
+# This script converts the cat data into lmdb format.
 
 TOOLS=../../caffe/build/tools
 TRAINDB=catnet_train_lmdb
 TESTDB=catnet_val_lmdb
 MEANFILE=catnet_mean.binaryproto
 DATA=./data
+RESIZE=256
 
 echo "Creating train/test databases ..."
 
@@ -20,16 +21,16 @@ if [ -e $DATA/$MEANFILE ];then
 fi
 
 GLOG_logtostderr=1 $TOOLS/convert_imageset \
-    --resize_height=256 \
-    --resize_width=256 \
+    --resize_height=$RESIZE \
+    --resize_width=$RESIZE \
     --shuffle \
     $DATA/ \
     $DATA/train.txt \
     $TRAINDB
 
 GLOG_logtostderr=1 $TOOLS/convert_imageset \
-    --resize_height=256 \
-    --resize_width=256 \
+    --resize_height=$RESIZE \
+    --resize_width=$RESIZE \
     --shuffle \
     $DATA/ \
     $DATA/val.txt \

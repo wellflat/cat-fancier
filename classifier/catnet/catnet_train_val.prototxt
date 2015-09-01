@@ -1,17 +1,17 @@
-name: "CaffeNet"
+name: "CatNet"
 layers {
   name: "data"
   type: DATA
   top: "data"
   top: "label"
   data_param {
-    source: "./catnet_train_lmdb"
+    source: "catnet_train_lmdb"
     backend: LMDB
-    batch_size: 50
+    batch_size: 64
   }
   transform_param {
-    mean_file: "./data/catnet_mean.binaryproto"
     crop_size: 227
+    mean_file: "./data/catnet_mean.binaryproto"
     mirror: true
   }
   include: { phase: TRAIN }
@@ -22,13 +22,13 @@ layers {
   top: "data"
   top: "label"
   data_param {
-    source: "./catnet_val_lmdb"
+    source: "catnet_val_lmdb"
     backend: LMDB
     batch_size: 50
   }
   transform_param {
-    mean_file: "./data/catnet_mean.binaryproto"
     crop_size: 227
+    mean_file: "./data/catnet_mean.binaryproto"
     mirror: false
   }
   include: { phase: TEST }
@@ -313,8 +313,8 @@ layers {
   type: INNER_PRODUCT
   bottom: "fc7"
   top: "fc8ft"
-  blobs_lr: 1
-  blobs_lr: 2
+  blobs_lr: 10
+  blobs_lr: 20
   weight_decay: 1
   weight_decay: 0
   inner_product_param {
