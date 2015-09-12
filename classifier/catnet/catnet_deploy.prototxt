@@ -1,63 +1,18 @@
 name: "CatNet"
-layer {
-  name: "data"
-  type: "Data"
-  top: "data"
-  top: "label"
-  data_param {
-    source: "catnet_train_lmdb"
-    backend: LMDB
-    batch_size: 64
-  }
-  transform_param {
-    crop_size: 227
-    mean_file: "./data/catnet_mean.binaryproto"
-    mirror: true
-  }
-  include: { phase: TRAIN }
-}
-layer {
-  name: "data"
-  type: "Data"
-  top: "data"
-  top: "label"
-  data_param {
-    source: "catnet_val_lmdb"
-    backend: LMDB
-    batch_size: 50
-  }
-  transform_param {
-    crop_size: 227
-    mean_file: "./data/catnet_mean.binaryproto"
-    mirror: false
-  }
-  include: { phase: TEST }
-}
+input: "data"
+input_dim: 10
+input_dim: 3
+input_dim: 227
+input_dim: 227
 layer {
   name: "conv1"
   type: "Convolution"
   bottom: "data"
   top: "conv1"
-  param {
-    lr_mult: 1
-    decay_mult: 1
-  }
-  param {
-    lr_mult: 2
-    decay_mult: 0
-  }
   convolution_param {
     num_output: 96
     kernel_size: 11
     stride: 4
-    weight_filler {
-      type: "gaussian"
-      std: 0.01
-    }
-    bias_filler {
-      type: "constant"
-      value: 0
-    }
   }
 }
 layer {
@@ -93,27 +48,11 @@ layer {
   type: "Convolution"
   bottom: "norm1"
   top: "conv2"
-  param {
-    lr_mult: 1
-    decay_mult: 1
-  }
-  param {
-    lr_mult: 2
-    decay_mult: 0
-  }
   convolution_param {
     num_output: 256
     pad: 2
     kernel_size: 5
     group: 2
-    weight_filler {
-      type: "gaussian"
-      std: 0.01
-    }
-    bias_filler {
-      type: "constant"
-      value: 1
-    }
   }
 }
 layer {
@@ -149,26 +88,10 @@ layer {
   type: "Convolution"
   bottom: "norm2"
   top: "conv3"
-  param {
-    lr_mult: 1
-    decay_mult: 1
-  }
-  param {
-    lr_mult: 2
-    decay_mult: 0
-  }
   convolution_param {
     num_output: 384
     pad: 1
     kernel_size: 3
-    weight_filler {
-      type: "gaussian"
-      std: 0.01
-    }
-    bias_filler {
-      type: "constant"
-      value: 0
-    }
   }
 }
 layer {
@@ -182,27 +105,11 @@ layer {
   type: "Convolution"
   bottom: "conv3"
   top: "conv4"
-  param {
-    lr_mult: 1
-    decay_mult: 1
-  }
-  param {
-    lr_mult: 2
-    decay_mult: 0
-  }
   convolution_param {
     num_output: 384
     pad: 1
     kernel_size: 3
     group: 2
-    weight_filler {
-      type: "gaussian"
-      std: 0.01
-    }
-    bias_filler {
-      type: "constant"
-      value: 1
-    }
   }
 }
 layer {
@@ -216,27 +123,11 @@ layer {
   type: "Convolution"
   bottom: "conv4"
   top: "conv5"
-  param {
-    lr_mult: 1
-    decay_mult: 1
-  }
-  param {
-    lr_mult: 2
-    decay_mult: 0
-  }
   convolution_param {
     num_output: 256
     pad: 1
     kernel_size: 3
     group: 2
-    weight_filler {
-      type: "gaussian"
-      std: 0.01
-    }
-    bias_filler {
-      type: "constant"
-      value: 1
-    }
   }
 }
 layer {
@@ -261,24 +152,8 @@ layer {
   type: "InnerProduct"
   bottom: "pool5"
   top: "fc6"
-  param {
-    lr_mult: 1
-    decay_mult: 1
-  }
-  param {
-    lr_mult: 2
-    decay_mult: 0
-  }
   inner_product_param {
     num_output: 4096
-    weight_filler {
-      type: "gaussian"
-      std: 0.005
-    }
-    bias_filler {
-      type: "constant"
-      value: 1
-    }
   }
 }
 layer {
@@ -301,24 +176,8 @@ layer {
   type: "InnerProduct"
   bottom: "fc6"
   top: "fc7"
-  param {
-    lr_mult: 1
-    decay_mult: 1
-  }
-  param {
-    lr_mult: 2
-    decay_mult: 0
-  }
   inner_product_param {
     num_output: 4096
-    weight_filler {
-      type: "gaussian"
-      std: 0.005
-    }
-    bias_filler {
-      type: "constant"
-      value: 1
-    }
   }
 }
 layer {
@@ -341,40 +200,13 @@ layer {
   type: "InnerProduct"
   bottom: "fc7"
   top: "fc8ft"
-  param {
-    #lr_mult: 10
-    lr_mult: 1
-    decay_mult: 1
-  }
-  param {
-    #lr_mult: 20
-    lr_mult: 2
-    decay_mult: 0
-  }
   inner_product_param {
     num_output: 12
-    weight_filler {
-      type: "gaussian"
-      std: 0.01
-    }
-    bias_filler {
-      type: "constant"
-      value: 0
-    }
   }
 }
 layer {
-  name: "accuracy"
-  type: "Accuracy"
-  bottom: "fc8ft"
-  bottom: "label"
-  top: "accuracy"
-  include: { phase: TEST }
-}
-layer {
-  name: "loss"
-  type: "SoftmaxWithLoss"
-  bottom: "fc8ft"
-  bottom: "label"
-  top: "loss"
+  name: "prob"
+  type: "Softmax"
+  bottom: "fc8"
+  top: "prob"
 }
