@@ -207,6 +207,6 @@ layer {
 layer {
   name: "prob"
   type: "Softmax"
-  bottom: "fc8"
+  bottom: "fc8ft"
   top: "prob"
 }
